@@ -280,10 +280,10 @@ static int geoip_post_read_request(request_rec *r)
 				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", gir->country_code);
 				apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
 				if (gir->region != NULL){
-					apr_table_setn(r->notes, "GEOIP_REGION", gir->region);
+					apr_table_set(r->notes, "GEOIP_REGION", gir->region);
 				}
 				if (gir->city != NULL){
-					apr_table_setn(r->notes, "GEOIP_CITY", gir->city);
+					apr_table_set(r->notes, "GEOIP_CITY", gir->city);
 				}
 				apr_table_setn(r->notes,"GEOIP_DMA_CODE",dmacodestr);
 				apr_table_setn(r->notes,"GEOIP_AREA_CODE",areacodestr);
@@ -292,10 +292,10 @@ static int geoip_post_read_request(request_rec *r)
 				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", gir->country_code);
 				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
 				if (gir->region != NULL){
-					apr_table_setn(r->subprocess_env, "GEOIP_REGION", gir->region);
+					apr_table_set(r->subprocess_env, "GEOIP_REGION", gir->region);
 				}
 				if (gir->city != NULL){
-					apr_table_setn(r->subprocess_env, "GEOIP_CITY", gir->city);
+					apr_table_set(r->subprocess_env, "GEOIP_CITY", gir->city);
 				}
 				apr_table_setn(r->subprocess_env,"GEOIP_DMA_CODE",dmacodestr);
 				apr_table_setn(r->subprocess_env,"GEOIP_AREA_CODE",areacodestr);
