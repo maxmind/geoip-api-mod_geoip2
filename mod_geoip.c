@@ -192,7 +192,7 @@ static int geoip_post_read_request(request_rec *r)
 			for (i = 0;i < cfg->numGeoIPFiles;i++){
 				cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i]);
 				if(!cfg->gips[i]) {
-					ap_log_error(APLOG_MARK, APLOG_ERR, 0, r, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
+					ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
 					return DECLINED;
 				}
 			}
@@ -201,7 +201,7 @@ static int geoip_post_read_request(request_rec *r)
 			cfg->gips = malloc(sizeof(GeoIP *));
 			cfg->gips[0] = GeoIP_new( GEOIP_STANDARD );
 			if (!cfg->gips[0]){
-				ap_log_error(APLOG_MARK, APLOG_ERR, 0, r, "[mod_geoip]: Error while opening data file");
+				ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "[mod_geoip]: Error while opening data file");
 				return DECLINED;
 			}
 			cfg->numGeoIPFiles = 1;
@@ -301,13 +301,14 @@ static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
 
 static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *filename,const char *arg2)
 {
+	int i;
 	geoip_server_config_rec *conf = (geoip_server_config_rec *)
 		ap_get_module_config(cmd->server->module_config, &geoip_module);
 
 	if ( ! filename )
 		return NULL;
 
-	int i = conf->numGeoIPFiles;
+	i = conf->numGeoIPFiles;
 	conf->numGeoIPFiles++;
 	conf->GeoIPFilenames = realloc(conf->GeoIPFilenames, conf->numGeoIPFiles * sizeof(char *));
 	conf->GeoIPFilenames[i] = (char *)apr_pstrdup(cmd->pool,filename);
