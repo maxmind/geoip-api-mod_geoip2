@@ -1,3 +1,4 @@
+1.1.2 Aug 12th 2004
 	- Added support for GeoIP Netspeed Edition ( Frank Mather )
 	- Added support for GeoIP City setting GEOIP_LATITUDE, GEOIP_LONGITUDE, and GEOIP_POSTAL_CODE ( Frank Mather )
 
