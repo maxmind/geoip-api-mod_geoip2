@@ -374,7 +374,7 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 static const command_rec geoip_cmds[] = 
 {
 	AP_INIT_FLAG( "GeoIPEnable", set_geoip_enable,   NULL, OR_FILEINFO, "Turn on mod_geoip"),
-	AP_INIT_TAKE1("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
+	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
 	{NULL}
 };
 
