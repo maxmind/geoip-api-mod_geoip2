@@ -55,3 +55,11 @@ Block.
 
 If mod_geoip doesn't work, try taking the LoadModule geoip_module line outside
 the <IfModule worker.c> block.
+
+If you get the following errors:
+  parse error before "geoip_module"
+  warning: data definition has no type or storage class
+Make sure that the apxs script belongs to the Apache server you are using.
+These error messages result from using a Apache 1.3 apxs script with
+a Apache 2.0 server.
+
