@@ -1,0 +1,6 @@
+1.0.6 Aug 30th 2002
+	- Added GeoIP_delete upon cleanup ( Corris Randall )
+	- 
+
+1.0.5 Aug 29th 2002
+	- Initial Release ( Corris Randall )

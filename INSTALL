@@ -1,0 +1,41 @@
+===========================================================================
+Requirements:
+
+Apache 2.0.40 installed
+GeoIP 1.0.x installed, download from http://maxmind.com/download/geoip/api/c
+
+===========================================================================
+To build mod_geoip as a dynamically loadable module:
+
+apxs -i -a -L/usr/local/lib -I/usr/local/include -lGeoIP -c mod_geoip.c
+
+-I/usr/local/include is where the GeoIP.h header file is installed
+-L/usr/local/lib is where the libGeoIP library is located
+
+This will put the correct LoadModule statement.
+
+You will need to add:
+
+===========================================================================
+Configuration
+
+To enable the module, place
+
+<IfModule mod_geoip.c>
+  GeoIPEnable On
+</IfModule>
+
+inside your httpd.conf file. ( You don't have to have the <IfModule> block, 
+but it's always a good idea.
+
+( You can optionally specify the data file by using: 
+
+<IfModule mod_geoip.c>
+  GeoIPEnable On
+  GeoIPDBFile /usr/tmp/GeoIP.dat
+</IfModule>
+
+)
+
+
+===========================================================================

@@ -1,0 +1,20 @@
+				mod_geoip 1.0.6
+				---------------
+
+mod_geoip is an Apache module for finding the country that a web request
+originated from.  It uses the GeoIP library and database to perform
+the lookup.  It is free software, licensed under the Apache license.
+
+To use, see the instructions in INSTALL on how to install the module,
+then make sure that
+
+  GeoIPEnable On
+
+is set in your Apache configuration file.
+
+You can retrieve the ISO 3166 Country code from the Apache notes table
+under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
+"GEOIP_COUNTRY_CODE".  It also sets the GEOIP_COUNTRY_NAME note and
+environment variable.
+
+Please send any comments or suggestions to tjmather@maxmind.com
