@@ -36,7 +36,7 @@ GeoIP Region Edition:
 Sets GEOIP_COUNTRY_CODE and GEOIP_REGION
 
 GeoIP City Edition:
-Sets GEOIP_COUNTRY_CODE, GEOIP_REGION, and GEOIP_CITY.
+Sets GEOIP_COUNTRY_CODE, GEOIP_REGION, GEOIP_CITY, GEOIP_LATITUDE, GEOIP_LONGITUDE, GEOIP_POSTAL_CODE
 
 GeoIP ISP Edition:
 Sets GEOIP_ISP
@@ -45,6 +45,9 @@ for details)
 
 GeoIP Organization Edition:
 Sets GEOIP_ORGANIZATION
+
+GeoIP Netspeed Edition:
+Sets GEOIP_NETSPEED
 
 By default it uses GEOIP_STANDARD mode, which does not perform
 any memory caching (it is the most memory efficient).  To turn

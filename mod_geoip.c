@@ -49,14 +49,14 @@
 
 /* geoip module
  *
- * Version 1.1.0
+ * Version 1.1.1
  *
  * This module sets an environment variable to the remote country
  * based on the requestor's IP address.  It uses the GeoIP library
  * to lookup the country by IP address.
  *
  * Copyright 2004, MaxMind LLC
- * April 19th 2004
+ * July 12th 2004
  *
  * Initial port Contributed by Corris Randall <corris@cpan.org>
  *
@@ -91,6 +91,9 @@ static const int GEOIP_UNKNOWN = -1;
 
 char dmacodestr[100];
 char areacodestr[100];
+char latstr[100];
+char lonstr[100];
+const char *netspeedstring;
 
 module AP_MODULE_DECLARE_DATA geoip_module;
 
@@ -174,6 +177,7 @@ static int geoip_post_read_request(request_rec *r)
 	GeoIPRecord * gir;
 	GeoIPRegion * giregion;
 	int i;
+	int netspeed;
 
 
 	cfg = ap_get_module_config(r->server->module_config, &geoip_module);
@@ -210,6 +214,23 @@ static int geoip_post_read_request(request_rec *r)
 	for (i = 0; i < cfg->numGeoIPFiles;i++){
         	databaseType = GeoIP_database_edition(cfg->gips[i]);
 		switch (databaseType){
+                case GEOIP_NETSPEED_EDITION:
+			netspeed = GeoIP_id_by_name (cfg->gips[i], ipaddr);
+			if (netspeed == GEOIP_UNKNOWN_SPEED) {
+        	              	netspeedstring = "unknown";
+      			}
+                        else if (netspeed == GEOIP_DIALUP_SPEED) {
+        			netspeedstring = "dialup";
+      			}
+      			else if (netspeed == GEOIP_CABLEDSL_SPEED) {
+        			netspeedstring = "cabledsl";
+      			}
+      			else if (netspeed == GEOIP_CORPORATE_SPEED) {
+        			netspeedstring = "corporate";
+      			}
+        		apr_table_setn(r->notes,"GEOIP_NETSPEED",netspeedstring);
+        		apr_table_setn(r->subprocess_env,"GEOIP_NETSPEED",netspeedstring);
+                break;
 		case GEOIP_COUNTRY_EDITION:
 			/* Get the Country ID */
 			country_id = GeoIP_country_id_by_addr( cfg->gips[i], ipaddr );
@@ -262,6 +283,17 @@ static int geoip_post_read_request(request_rec *r)
 			}
 			apr_table_setn(r->subprocess_env,"GEOIP_DMA_CODE",dmacodestr);
 			apr_table_setn(r->subprocess_env,"GEOIP_AREA_CODE",areacodestr);
+			sprintf(latstr,"%f",gir->latitude);
+			sprintf(lonstr,"%f",gir->longitude);
+			apr_table_setn(r->notes,"GEOIP_LATITUDE",latstr);
+			apr_table_setn(r->subprocess_env,"GEOIP_LATITUDE",latstr);
+			apr_table_setn(r->notes,"GEOIP_LONGITUDE",lonstr);
+			apr_table_setn(r->subprocess_env,"GEOIP_LONGITUDE",lonstr);
+
+			if (gir->postal_code != NULL){
+				apr_table_setn(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
+				apr_table_setn(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
+			}
 		}			
 		break;
 		case GEOIP_ORG_EDITION:
