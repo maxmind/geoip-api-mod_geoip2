@@ -228,8 +228,12 @@ static int geoip_post_read_request(request_rec *r)
       			else if (netspeed == GEOIP_CORPORATE_SPEED) {
         			netspeedstring = "corporate";
       			}
-        		apr_table_setn(r->notes,"GEOIP_NETSPEED",netspeedstring);
-        		apr_table_setn(r->subprocess_env,"GEOIP_NETSPEED",netspeedstring);
+			if (cfg->GeoIPOutput & GEOIP_NOTES){
+        		        apr_table_setn(r->notes,"GEOIP_NETSPEED",netspeedstring);
+        		}
+			if (cfg->GeoIPOutput & GEOIP_ENV){
+			        apr_table_setn(r->subprocess_env,"GEOIP_NETSPEED",netspeedstring);
+			}
                 break;
 		case GEOIP_COUNTRY_EDITION:
 			/* Get the Country ID */
@@ -242,19 +246,27 @@ static int geoip_post_read_request(request_rec *r)
 			if (cfg->numGeoIPFiles == 0){cfg->numGeoIPFiles = 0;}
 			if (cfg->GeoIPFilenames == 0){cfg->GeoIPFilenames = 0;}
 			/* Set it for our user */
-			apr_table_setn( r->notes,          "GEOIP_COUNTRY_CODE", country_code );
-			apr_table_setn( r->notes,          "GEOIP_COUNTRY_NAME", country_name );
-			apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code );
-			apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name );
+			if (cfg->GeoIPOutput & GEOIP_NOTES){
+			        apr_table_setn( r->notes,          "GEOIP_COUNTRY_CODE", country_code );
+			        apr_table_setn( r->notes,          "GEOIP_COUNTRY_NAME", country_name );
+			}
+			if (cfg->GeoIPOutput & GEOIP_ENV){
+				apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code );
+				apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name );
+			}
 			break;
 		case GEOIP_REGION_EDITION_REV0:
 		case GEOIP_REGION_EDITION_REV1:
 			giregion = GeoIP_region_by_name( cfg->gips[i], ipaddr);
 			if (giregion != NULL){
-				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
-				apr_table_setn(r->notes, "GEOIP_REGION", giregion->region);
-				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
-				apr_table_setn(r->subprocess_env, "GEOIP_REGION", giregion->region);
+				if (cfg->GeoIPOutput & GEOIP_NOTES){
+					apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					apr_table_setn(r->notes, "GEOIP_REGION", giregion->region);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV){
+					apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					apr_table_setn(r->subprocess_env, "GEOIP_REGION", giregion->region);
+				}
 				GeoIPRegion_delete(giregion);
 			}
 			break;
@@ -262,38 +274,53 @@ static int geoip_post_read_request(request_rec *r)
 		case GEOIP_CITY_EDITION_REV1:
 			gir = GeoIP_record_by_addr(cfg->gips[i], ipaddr);
 		if (gir != NULL) {
-			apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", gir->country_code);
-			apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
-			if (gir->region != NULL){
-				apr_table_setn(r->notes, "GEOIP_REGION", gir->region);
-			}
-			if (gir->city != NULL){
-				apr_table_setn(r->notes, "GEOIP_CITY", gir->city);
-			}
 			sprintf(dmacodestr,"%d",gir->dma_code);
-			apr_table_setn(r->notes,"GEOIP_DMA_CODE",dmacodestr);
 			sprintf(areacodestr,"%d",gir->area_code);
-			apr_table_setn(r->notes,"GEOIP_AREA_CODE",areacodestr);
-			apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", gir->country_code);
-			apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
-			if (gir->region != NULL){
-				apr_table_setn(r->subprocess_env, "GEOIP_REGION", gir->region);
+			if (cfg->GeoIPOutput & GEOIP_NOTES){
+				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", gir->country_code);
+				apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
+				if (gir->region != NULL){
+					apr_table_setn(r->notes, "GEOIP_REGION", gir->region);
+				}
+				if (gir->city != NULL){
+					apr_table_setn(r->notes, "GEOIP_CITY", gir->city);
+				}
+				apr_table_setn(r->notes,"GEOIP_DMA_CODE",dmacodestr);
+				apr_table_setn(r->notes,"GEOIP_AREA_CODE",areacodestr);
 			}
-			if (gir->city != NULL){
-				apr_table_setn(r->subprocess_env, "GEOIP_CITY", gir->city);
+			if (cfg->GeoIPOutput & GEOIP_ENV){
+				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", gir->country_code);
+				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
+				if (gir->region != NULL){
+					apr_table_setn(r->subprocess_env, "GEOIP_REGION", gir->region);
+				}
+				if (gir->city != NULL){
+					apr_table_setn(r->subprocess_env, "GEOIP_CITY", gir->city);
+				}
+				apr_table_setn(r->subprocess_env,"GEOIP_DMA_CODE",dmacodestr);
+				apr_table_setn(r->subprocess_env,"GEOIP_AREA_CODE",areacodestr);
 			}
-			apr_table_setn(r->subprocess_env,"GEOIP_DMA_CODE",dmacodestr);
-			apr_table_setn(r->subprocess_env,"GEOIP_AREA_CODE",areacodestr);
 			sprintf(latstr,"%f",gir->latitude);
 			sprintf(lonstr,"%f",gir->longitude);
-			apr_table_setn(r->notes,"GEOIP_LATITUDE",latstr);
-			apr_table_setn(r->subprocess_env,"GEOIP_LATITUDE",latstr);
-			apr_table_setn(r->notes,"GEOIP_LONGITUDE",lonstr);
-			apr_table_setn(r->subprocess_env,"GEOIP_LONGITUDE",lonstr);
-
+			if (cfg->GeoIPOutput & GEOIP_NOTES){
+				apr_table_setn(r->notes,"GEOIP_LATITUDE",latstr);
+			}
+			if (cfg->GeoIPOutput & GEOIP_ENV){
+				apr_table_setn(r->subprocess_env,"GEOIP_LATITUDE",latstr);
+			}
+			if (cfg->GeoIPOutput & GEOIP_NOTES){
+				apr_table_setn(r->notes,"GEOIP_LONGITUDE",lonstr);
+			}
+			if (cfg->GeoIPOutput & GEOIP_ENV){
+				apr_table_setn(r->subprocess_env,"GEOIP_LONGITUDE",lonstr);
+			}
 			if (gir->postal_code != NULL){
-				apr_table_setn(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
-				apr_table_setn(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
+				if (cfg->GeoIPOutput & GEOIP_NOTES){
+					apr_table_setn(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV){
+					apr_table_setn(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
+				}
 			}
 			GeoIPRecord_delete(gir);
 		}			
@@ -301,15 +328,23 @@ static int geoip_post_read_request(request_rec *r)
 		case GEOIP_ORG_EDITION:
 			orgorisp = GeoIP_name_by_addr(cfg->gips[i],ipaddr);
 			if (orgorisp != NULL){
-				apr_table_setn(r->notes, "GEOIP_ORGANIZATION", orgorisp);
-				apr_table_setn(r->subprocess_env, "GEOIP_ORGANIZATION", orgorisp);
+				if (cfg->GeoIPOutput & GEOIP_NOTES){
+					apr_table_setn(r->notes, "GEOIP_ORGANIZATION", orgorisp);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV){
+					apr_table_setn(r->subprocess_env, "GEOIP_ORGANIZATION", orgorisp);
+				}
 			}
 			break;
 		case GEOIP_ISP_EDITION:
 			orgorisp = GeoIP_name_by_addr(cfg->gips[i],ipaddr);
 			if (orgorisp != NULL){
-				apr_table_setn(r->notes, "GEOIP_ISP", orgorisp);
-				apr_table_setn(r->subprocess_env, "GEOIP_ISP", orgorisp);
+				if (cfg->GeoIPOutput & GEOIP_NOTES){
+					apr_table_setn(r->notes, "GEOIP_ISP", orgorisp);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV){
+					apr_table_setn(r->subprocess_env, "GEOIP_ISP", orgorisp);
+				}
 			}
 			break;
 		}
@@ -359,6 +394,21 @@ static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *f
 	return NULL;
 }
 
+static const char *set_geoip_output(cmd_parms *cmd, void *dummy,const char *arg) {
+       	geoip_server_config_rec *cfg = (geoip_server_config_rec *) ap_get_module_config(cmd->server->module_config, &geoip_module);
+  	if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
+    		/* was set to default, clear so can be reset with user specified values */
+    		cfg->GeoIPOutput = GEOIP_NONE;
+  	}
+  	if (!strcmp(arg, "Notes")) {
+   	 	cfg->GeoIPOutput |= GEOIP_NOTES;
+  	} else if (!strcmp(arg, "Env")) {
+    		cfg->GeoIPOutput |= GEOIP_ENV;
+  	} else if (!strcmp(arg, "All")) {
+    		cfg->GeoIPOutput |= GEOIP_ALL;
+  	}
+  	return NULL;
+}
 
 static void *make_geoip(apr_pool_t *p, server_rec *d)
 {
@@ -366,7 +416,12 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 
 	dcfg = (geoip_server_config_rec *) apr_pcalloc(p, sizeof(geoip_server_config_rec));
 	dcfg->gips = NULL;
+	dcfg->numGeoIPFiles = 0;
+	dcfg->GeoIPFilenames = NULL;
 	dcfg->GeoIPEnabled = 0;
+	dcfg->GeoIPOutput = GEOIP_INIT;
+	dcfg->GeoIPFlags = GEOIP_STANDARD;
+	dcfg->GeoIPFlags2 = NULL;
 	return dcfg;
 }
 
@@ -375,6 +430,7 @@ static const command_rec geoip_cmds[] =
 {
 	AP_INIT_FLAG( "GeoIPEnable", set_geoip_enable,   NULL, OR_FILEINFO, "Turn on mod_geoip"),
 	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
+	AP_INIT_ITERATE("GeoIPOutput", set_geoip_output, NULL, OR_FILEINFO, "Specify output method(s)"),
 	{NULL}
 };
 

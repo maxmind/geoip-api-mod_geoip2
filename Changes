@@ -1,4 +1,5 @@
 1.1.3 Dec  9th 2004
+	- Added support for GeoIPOutput
 	- Changed command setup to AP_INIT_TAKE12 from AP_INIT_TAKE1 GeoIPDBFile (merv)
 	- Memory Leak fix when using GeoIP Region database
 	- Memory Leak fix when using GeoIP City database (Shane Nelson)

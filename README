@@ -50,6 +50,14 @@ Sets GEOIP_ORGANIZATION
 GeoIP Netspeed Edition:
 Sets GEOIP_NETSPEED
 
+By default it sets both the notes table and environment variable.
+For performance reasons you may want to only set the one you use, to
+do so use the "GeoIPOutput" configuration directive:
+
+  GeoIPOutput Notes   # Sets Apache notes table only
+  GeoIPOutput Env     # Sets Environmental Variable only
+  GeoIPOutput All     # Sets both (current default behaviour)
+
 By default it uses GEOIP_STANDARD mode, which does not perform
 any memory caching (it is the most memory efficient).  To turn
 on memory caching (warning can be memory intensive since
