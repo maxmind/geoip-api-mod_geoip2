@@ -1,6 +1,7 @@
 1.1.2 Aug 12th 2004
 	- Added support for GeoIP Netspeed Edition ( Frank Mather )
-	- Added support for GeoIP City setting GEOIP_LATITUDE, GEOIP_LONGITUDE, and GEOIP_POSTAL_CODE ( Frank Mather )
+	- Added support for GeoIP City setting GEOIP_DMA_CODE, GEOIP_AREA_CODE, GEOIP_LATITUDE,
+		GEOIP_LONGITUDE, and GEOIP_POSTAL_CODE ( Frank Mather )
 
 1.1.1 Jul 12th 2004
 	- Added more documentation for using from PHP
