@@ -1,9 +1,13 @@
-				mod_geoip 1.0.6
+				mod_geoip 1.1.0
 				---------------
+
+======== OVERVIEW =========
 
 mod_geoip is an Apache module for finding the country that a web request
 originated from.  It uses the GeoIP library and database to perform
 the lookup.  It is free software, licensed under the Apache license.
+
+======== USAGE ============
 
 To use, see the instructions in INSTALL on how to install the module,
 then make sure that
@@ -12,9 +16,51 @@ then make sure that
 
 is set in your Apache configuration file.
 
+If you want to specify the a non-default location for the database file(s),
+use
+
+  GeoIPDBFile /path/to/GeoIP.dat
+
+For example
+
+GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat Standard
+
+GeoIP Country Edition:
 You can retrieve the ISO 3166 Country code from the Apache notes table
 under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
 "GEOIP_COUNTRY_CODE".  It also sets the GEOIP_COUNTRY_NAME note and
 environment variable.
 
-Please send any comments or suggestions to tjmather@maxmind.com
+GeoIP Region Edition:
+Sets GEOIP_COUNTRY_CODE and GEOIP_REGION
+
+GeoIP City Edition:
+Sets GEOIP_COUNTRY_CODE, GEOIP_REGION, and GEOIP_CITY.
+
+GeoIP ISP Edition:
+Sets GEOIP_ISP
+(Note to ISP edition subscribers, requires non-standard database - contact support@maxmind.com
+for details)
+
+GeoIP Organization Edition:
+Sets GEOIP_ORGANIZATION
+
+By default it uses GEOIP_STANDARD mode, which does not perform
+any memory caching (it is the most memory efficient).  To turn
+on memory caching (warning can be memory intensive since
+it is used across all Apache children) use:
+
+  GeoIPFlags MemoryCache
+
+We recommend that you use Memory Caching only for the smaller
+database files, such as GeoIP Country and GeoIP ISP.
+
+If you would like to enable checking for updates in the memory cache, use
+
+  GeoIPFlags CheckCache
+
+Before making a call to the database, geoip will check the GeoIP.dat file
+to see if there is an updated database before making the call.  This way
+you shouldn't have to restart the Apache server after updating the GeoIP
+data files.

@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
- * Copyright (c) 2002 MaxMind.com.  All rights reserved.
+ * Copyright (c) 2004 MaxMind LLC.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,16 +49,16 @@
 
 /* geoip module
  *
- * Version 1.0.5
+ * Version 1.1.0
  *
  * This module sets an environment variable to the remote country
  * based on the requestor's IP address.  It uses the GeoIP library
  * to lookup the country by IP address.
  *
- * Copyright 2002, MaxMind.com
- * June 26th, 2002
+ * Copyright 2004, MaxMind LLC
+ * April 19th 2004
  *
- * Contributed by Corris Randall <corris@cpan.org>
+ * Initial port Contributed by Corris Randall <corris@cpan.org>
  *
  */
 
@@ -68,25 +68,57 @@
 #include "http_log.h"
 #include "ap_config.h"
 #include <GeoIP.h>
+#include <GeoIPCity.h>
 
 typedef struct {
-	GeoIP *gip;
-	char *filename;
-	int enabled;
+	GeoIP **gips;
+	int numGeoIPFiles;
+	char **GeoIPFilenames;
+	int GeoIPEnabled;
+	char GeoIPOutput;
+	int GeoIPFlags;
+	int *GeoIPFlags2;
 } geoip_server_config_rec;
+
+static const int GEOIP_NONE    = 0;
+static const int GEOIP_DEFAULT = 1;
+static const int GEOIP_NOTES   = 2;
+static const int GEOIP_ENV     = 4;
+static const int GEOIP_ALL     = 6;
+static const int GEOIP_INIT    = 7;
+
+static const int GEOIP_UNKNOWN = -1;
+
+char dmacodestr[100];
+char areacodestr[100];
 
 module AP_MODULE_DECLARE_DATA geoip_module;
 
 static void *create_geoip_server_config( apr_pool_t *p, server_rec *d )
 {
-	return apr_pcalloc(p, sizeof(geoip_server_config_rec));
+	geoip_server_config_rec *conf = apr_pcalloc(p, sizeof(geoip_server_config_rec));
+	if (!conf){
+		return NULL;
+	}
+	
+	conf->gips = NULL;
+	conf->numGeoIPFiles = 0;
+	conf->GeoIPFilenames = NULL;
+	conf->GeoIPEnabled = 0;
+	conf->GeoIPOutput = GEOIP_INIT;
+	conf->GeoIPFlags = GEOIP_STANDARD;
+	conf->GeoIPFlags2 = NULL;
+	return (void *)conf;
 }
 
 
 static apr_status_t geoip_cleanup(void *cfgdata)
 {
+	int i;
 	geoip_server_config_rec *cfg = (geoip_server_config_rec *)cfgdata;
-	GeoIP_delete( cfg->gip );
+	for (i = 0;i < cfg->numGeoIPFiles;i++){
+		GeoIP_delete( cfg->gips[i] );
+	}
 	return APR_SUCCESS;
 }
 
@@ -94,30 +126,43 @@ static apr_status_t geoip_cleanup(void *cfgdata)
 static void geoip_child_init(apr_pool_t *p, server_rec *s)
 {
 	geoip_server_config_rec *cfg;
+	int i;
 
 	cfg = (geoip_server_config_rec *)
 		ap_get_module_config(s->module_config,  &geoip_module);
 
-	if ( !cfg->gip ) {
-		if ( cfg->filename != NULL ) {
-			cfg->gip = GeoIP_open(cfg->filename, GEOIP_STANDARD);
+	if ( !cfg->gips ) {
+		if ( cfg->GeoIPFilenames != NULL ) {
+			cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
+			for (i = 0;i < cfg->numGeoIPFiles;i++){
+				cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i]);
+				if(!cfg->gips[i]) {
+					ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
+					return;
+				}
+			}
 		}
 		else {
-			cfg->gip = GeoIP_new( GEOIP_STANDARD );
-		}
-		if ( ! cfg->gip ) {
-			ap_log_error(APLOG_MARK,APLOG_ERR, 0, s, "Error while opening data file");
-			return;
+			cfg->gips = malloc(sizeof(GeoIP *));
+			cfg->gips[0] = GeoIP_new( GEOIP_STANDARD );
+			if (!cfg->gips[0]){
+				ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "[mod_geoip]: Error while opening data file");
+				return;
+			}
+			cfg->numGeoIPFiles = 1;
 		}
 	}
+
 
 	apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
 
 }
 
 
+
 static int geoip_post_read_request(request_rec *r)
 {
+	char *orgorisp;
 	char *ipaddr;
 	short int country_id;
 	GeoIP *gip;
@@ -125,43 +170,117 @@ static int geoip_post_read_request(request_rec *r)
 	const char *country_name;
 
 	geoip_server_config_rec *cfg;
+	unsigned char databaseType;
+	GeoIPRecord * gir;
+	GeoIPRegion * giregion;
+	int i;
+
 
 	cfg = ap_get_module_config(r->server->module_config, &geoip_module);
 
 	if ( !cfg ) 
 		return DECLINED;
 
-	if ( !cfg->enabled ) 
+	if ( !cfg->GeoIPEnabled ) 
 		return DECLINED;
 
 	ipaddr = r->connection->remote_ip;
 
-	if ( !cfg->gip ) {
-		if ( cfg->filename != NULL ) {
-			cfg->gip = GeoIP_open(cfg->filename, GEOIP_STANDARD);
+	if ( !cfg->gips ) {
+		if ( cfg->GeoIPFilenames != NULL ) {
+			cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
+			for (i = 0;i < cfg->numGeoIPFiles;i++){
+				cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i]);
+				if(!cfg->gips[i]) {
+					ap_log_error(APLOG_MARK, APLOG_ERR, 0, r, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
+					return DECLINED;
+				}
+			}
 		}
 		else {
-			cfg->gip = GeoIP_new( GEOIP_STANDARD );
-		}
-		if ( ! cfg->gip ) {
-			ap_log_rerror(APLOG_MARK,APLOG_ERR, 0, r, "Error while opening data file");
-			return DECLINED;
+			cfg->gips = malloc(sizeof(GeoIP *));
+			cfg->gips[0] = GeoIP_new( GEOIP_STANDARD );
+			if (!cfg->gips[0]){
+				ap_log_error(APLOG_MARK, APLOG_ERR, 0, r, "[mod_geoip]: Error while opening data file");
+				return DECLINED;
+			}
+			cfg->numGeoIPFiles = 1;
 		}
 	}
+	for (i = 0; i < cfg->numGeoIPFiles;i++){
+        	databaseType = GeoIP_database_edition(cfg->gips[i]);
+		switch (databaseType){
+		case GEOIP_COUNTRY_EDITION:
+			/* Get the Country ID */
+			country_id = GeoIP_country_id_by_addr( cfg->gips[i], ipaddr );
 
-	/* Get the Country ID */
-	country_id = GeoIP_country_id_by_addr( cfg->gip, ipaddr );
+			/* Lookup the Code and the Name with the ID */
+			country_code = GeoIP_country_code[country_id];
+			country_name = GeoIP_country_name[country_id];
 
-	/* Lookup the Code and the Name with the ID */
-	country_code = GeoIP_country_code[country_id];
-	country_name = GeoIP_country_name[country_id];
-
-	/* Set it for our user */
-	apr_table_setn( r->notes,          "GEOIP_COUNTRY_CODE", country_code );
-	apr_table_setn( r->notes,          "GEOIP_COUNTRY_NAME", country_name );
-	apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code );
-	apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name );
-
+			if (cfg->numGeoIPFiles == 0){cfg->numGeoIPFiles = 0;}
+			if (cfg->GeoIPFilenames == 0){cfg->GeoIPFilenames = 0;}
+			/* Set it for our user */
+			apr_table_setn( r->notes,          "GEOIP_COUNTRY_CODE", country_code );
+			apr_table_setn( r->notes,          "GEOIP_COUNTRY_NAME", country_name );
+			apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code );
+			apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name );
+			break;
+		case GEOIP_REGION_EDITION_REV0:
+		case GEOIP_REGION_EDITION_REV1:
+			giregion = GeoIP_region_by_name( cfg->gips[i], ipaddr);
+			if (giregion != NULL){
+				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
+				apr_table_setn(r->notes, "GEOIP_REGION", giregion->region);
+				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
+				apr_table_setn(r->subprocess_env, "GEOIP_REGION", giregion->region);
+			}
+			break;
+		case GEOIP_CITY_EDITION_REV0:
+		case GEOIP_CITY_EDITION_REV1:
+			gir = GeoIP_record_by_addr(cfg->gips[i], ipaddr);
+		if (gir != NULL) {
+			apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", gir->country_code);
+			apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
+			if (gir->region != NULL){
+				apr_table_setn(r->notes, "GEOIP_REGION", gir->region);
+			}
+			if (gir->city != NULL){
+				apr_table_setn(r->notes, "GEOIP_CITY", gir->city);
+			}
+			sprintf(dmacodestr,"%d",gir->dma_code);
+			apr_table_setn(r->notes,"GEOIP_DMA_CODE",dmacodestr);
+			sprintf(areacodestr,"%d",gir->area_code);
+			apr_table_setn(r->notes,"GEOIP_AREA_CODE",areacodestr);
+			apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", gir->country_code);
+			apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
+			if (gir->region != NULL){
+				apr_table_setn(r->subprocess_env, "GEOIP_REGION", gir->region);
+			}
+			if (gir->city != NULL){
+				apr_table_setn(r->subprocess_env, "GEOIP_CITY", gir->city);
+			}
+			apr_table_setn(r->subprocess_env,"GEOIP_DMA_CODE",dmacodestr);
+			apr_table_setn(r->subprocess_env,"GEOIP_AREA_CODE",areacodestr);
+		}			
+		break;
+		case GEOIP_ORG_EDITION:
+			orgorisp = GeoIP_name_by_addr(cfg->gips[i],ipaddr);
+			if (orgorisp != NULL){
+				apr_table_setn(r->notes, "GEOIP_ORGANIZATION", orgorisp);
+				apr_table_setn(r->subprocess_env, "GEOIP_ORGANIZATION", orgorisp);
+			}
+			break;
+		case GEOIP_ISP_EDITION:
+			orgorisp = GeoIP_name_by_addr(cfg->gips[i],ipaddr);
+			if (orgorisp != NULL){
+				apr_table_setn(r->notes, "GEOIP_ISP", orgorisp);
+				apr_table_setn(r->subprocess_env, "GEOIP_ISP", orgorisp);
+			}
+			break;
+		}
+	}
+	
 	return OK;
 }
 
@@ -175,12 +294,12 @@ static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
 		return "mod_geoip: server structure not allocated";
 
 
-	conf->enabled = arg;
+	conf->GeoIPEnabled = arg;
 	return NULL;
 }
 
 
-static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *filename)
+static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *filename,const char *arg2)
 {
 	geoip_server_config_rec *conf = (geoip_server_config_rec *)
 		ap_get_module_config(cmd->server->module_config, &geoip_module);
@@ -188,8 +307,20 @@ static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *f
 	if ( ! filename )
 		return NULL;
 
-	conf->filename = (char *)apr_pstrdup(cmd->pool,filename);
-
+	int i = conf->numGeoIPFiles;
+	conf->numGeoIPFiles++;
+	conf->GeoIPFilenames = realloc(conf->GeoIPFilenames, conf->numGeoIPFiles * sizeof(char *));
+	conf->GeoIPFilenames[i] = (char *)apr_pstrdup(cmd->pool,filename);
+	conf->GeoIPFlags2 = realloc(conf->GeoIPFlags2, conf->numGeoIPFiles * sizeof(int));
+	if (arg2 == NULL){
+		conf->GeoIPFlags2[i] = GEOIP_UNKNOWN;
+	} else if (!strcmp(arg2, "Standard")){
+		conf->GeoIPFlags2[i] = GEOIP_STANDARD;
+	} else if (!strcmp(arg2, "MemoryCache")){
+		conf->GeoIPFlags2[i] = GEOIP_MEMORY_CACHE;
+	} else if (!strcmp(arg2, "CheckCache")){
+		conf->GeoIPFlags2[i] = GEOIP_CHECK_CACHE;
+	}
 	return NULL;
 }
 
@@ -199,8 +330,8 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 	geoip_server_config_rec *dcfg;
 
 	dcfg = (geoip_server_config_rec *) apr_pcalloc(p, sizeof(geoip_server_config_rec));
-	dcfg->gip = NULL;
-	dcfg->enabled = 0;
+	dcfg->gips = NULL;
+	dcfg->GeoIPEnabled = 0;
 	return dcfg;
 }
 

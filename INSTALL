@@ -39,3 +39,19 @@ but it's always a good idea.
 
 
 ===========================================================================
+
+Troubleshooting
+
+On RedHat 9, apxs places 
+
+LoadModule geoip_module       /usr/lib/httpd/modules/mod_geoip.so
+
+Inside a
+
+<IfModule worker.c>
+</IfModule>
+
+Block.
+
+If mod_geoip doesn't work, try taking the LoadModule geoip_module line outside
+the <IfModule worker.c> block.
