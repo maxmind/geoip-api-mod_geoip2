@@ -255,6 +255,7 @@ static int geoip_post_read_request(request_rec *r)
 				apr_table_setn(r->notes, "GEOIP_REGION", giregion->region);
 				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
 				apr_table_setn(r->subprocess_env, "GEOIP_REGION", giregion->region);
+				GeoIPRegion_delete(giregion);
 			}
 			break;
 		case GEOIP_CITY_EDITION_REV0:
@@ -294,6 +295,7 @@ static int geoip_post_read_request(request_rec *r)
 				apr_table_setn(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
 				apr_table_setn(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
 			}
+			GeoIPRecord_delete(gir);
 		}			
 		break;
 		case GEOIP_ORG_EDITION:
