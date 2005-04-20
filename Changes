@@ -1,3 +1,6 @@
+1.1.5 Apr 19th 2005
+	- Removed dependence on DNS resolver for GeoIP Region and Netspeed databases
+
 1.1.4 Dec 23rd 2004
 	- Fixed Garbage characters appearing in GeoIP City/Region field, this
 	  bug was introduced in 1.1.3
