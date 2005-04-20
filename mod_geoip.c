@@ -215,7 +215,7 @@ static int geoip_post_read_request(request_rec *r)
         	databaseType = GeoIP_database_edition(cfg->gips[i]);
 		switch (databaseType){
                 case GEOIP_NETSPEED_EDITION:
-			netspeed = GeoIP_id_by_name (cfg->gips[i], ipaddr);
+			netspeed = GeoIP_id_by_addr (cfg->gips[i], ipaddr);
 			if (netspeed == GEOIP_UNKNOWN_SPEED) {
         	              	netspeedstring = "unknown";
       			}
@@ -257,7 +257,7 @@ static int geoip_post_read_request(request_rec *r)
 			break;
 		case GEOIP_REGION_EDITION_REV0:
 		case GEOIP_REGION_EDITION_REV1:
-			giregion = GeoIP_region_by_name( cfg->gips[i], ipaddr);
+			giregion = GeoIP_region_by_addr( cfg->gips[i], ipaddr);
 			if (giregion != NULL){
 				if (cfg->GeoIPOutput & GEOIP_NOTES){
 					apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
