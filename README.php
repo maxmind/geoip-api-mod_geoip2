@@ -9,13 +9,14 @@ $country_name = apache_note("GEOIP_COUNTRY_NAME");
 GeoIP Region:
 <?php
 $country_code = apache_note("GEOIP_COUNTRY_CODE");
-$country_name = apache_note("GEOIP_REGION");
+$region = apache_note("GEOIP_REGION");
 ?>
 
 GeoIP City:
 <?php
 $country_code = apache_note("GEOIP_COUNTRY_CODE");
-$country_name = apache_note("GEOIP_CITY");
+$region = apache_note("GEOIP_REGION");
+$city = apache_note("GEOIP_CITY");
 ?>
 
 ==================================================
