@@ -257,15 +257,15 @@ static int geoip_post_read_request(request_rec *r)
 			break;
 		case GEOIP_REGION_EDITION_REV0:
 		case GEOIP_REGION_EDITION_REV1:
-			giregion = GeoIP_region_by_addr( cfg->gips[i], ipaddr);
+			giregion = GeoIP_region_by_name( cfg->gips[i], ipaddr);
 			if (giregion != NULL){
 				if (cfg->GeoIPOutput & GEOIP_NOTES){
-					apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
-					apr_table_setn(r->notes, "GEOIP_REGION", giregion->region);
+					apr_table_set(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					apr_table_set(r->notes, "GEOIP_REGION", giregion->region);
 				}
 				if (cfg->GeoIPOutput & GEOIP_ENV){
-					apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
-					apr_table_setn(r->subprocess_env, "GEOIP_REGION", giregion->region);
+					apr_table_set(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					apr_table_set(r->subprocess_env, "GEOIP_REGION", giregion->region);
 				}
 				GeoIPRegion_delete(giregion);
 			}
