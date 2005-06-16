@@ -316,10 +316,10 @@ static int geoip_post_read_request(request_rec *r)
 			}
 			if (gir->postal_code != NULL){
 				if (cfg->GeoIPOutput & GEOIP_NOTES){
-					apr_table_setn(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
+					apr_table_set(r->notes,"GEOIP_POSTAL_CODE",gir->postal_code);
 				}
 				if (cfg->GeoIPOutput & GEOIP_ENV){
-					apr_table_setn(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
+					apr_table_set(r->subprocess_env,"GEOIP_POSTAL_CODE",gir->postal_code);
 				}
 			}
 			GeoIPRecord_delete(gir);
