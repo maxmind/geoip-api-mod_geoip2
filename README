@@ -1,4 +1,4 @@
-				mod_geoip2 1.1.6
+				mod_geoip2 1.1.7
 				----------------
 
 ======== OVERVIEW =========
@@ -76,3 +76,33 @@ Before making a call to the database, geoip will check the GeoIP.dat file
 to see if there is an updated database before making the call.  This way
 you shouldn't have to restart the Apache server after updating the GeoIP
 data files.
+
+========= redirection with mod_geoip and mod_rewrite ========
+
+Below is an example of how to do redirection with mod_geoip and
+mod_rewrite:
+
+GeoIPEnable On
+GeoIPDBFile /path/to/GeoIP.dat
+
+RewriteEngine on
+RewriteCond %{ENV:GEOIP_COUNTRY_CODE} ^CA$
+RewriteRule \.(gif|jpg|png|css)$ - [L] # don't redirect images and stylesheets
+RewriteRule ^(.*)$ http://www.canada.com [L] # redirect everything else
+
+======== Blocking unwanted countries ==========
+
+# This blocks traffic from China and Russia
+
+GeoIPEnable On
+GeoIPDBFile /path/to/GeoIP.dat
+
+SetEnvIf GEOIP_COUNTRY_CODE CN BlockCountry
+SetEnvIf GEOIP_COUNTRY_CODE RU BlockCountry
+# ... place more countries here
+
+Deny from env=BlockCountry
+
+# Optional - use if you want to allow a specific IP address from the country you denied
+# See http://httpd.apache.org/docs/1.3/mod/mod_access.html for more details
+# Allow from 10.1.2.3
