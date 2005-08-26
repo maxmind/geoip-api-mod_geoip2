@@ -3,9 +3,12 @@
 
 ======== OVERVIEW =========
 
-mod_geoip is an Apache module for finding the country that a web request
+mod_geoip2 is an Apache 2.0 module for finding the country that a web request
 originated from.  It uses the GeoIP library and database to perform
 the lookup.  It is free software, licensed under the Apache license.
+
+For the Apache 1.3 mod_geoip module, see:
+http://www.maxmind.com/download/geoip/api/mod_geoip/
 
 ======== USAGE ============
 
@@ -68,7 +71,7 @@ it is used across all Apache children) use:
 We recommend that you use Memory Caching only for the smaller
 database files, such as GeoIP Country and GeoIP ISP.
 
-If you would like to enable checking for updates in the memory cache, use
+If you would like to enable checking for GeoIP updates, use
 
   GeoIPFlags CheckCache
 
