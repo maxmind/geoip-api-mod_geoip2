@@ -33,7 +33,10 @@ GeoIP Country Edition:
 You can retrieve the ISO 3166 Country code from the Apache notes table
 under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
 "GEOIP_COUNTRY_CODE".  It also sets the GEOIP_COUNTRY_NAME note and
-environment variable.
+environment variable.  If GeoIP does not determine the country
+for an IP address (for example if the IP address is missing
+or is a private IP address), then it will not set the
+GEOIP_COUNTRY_CODE and GEOIP_COUNTRY_NAME variables.
 
 GeoIP Region Edition:
 Sets GEOIP_COUNTRY_CODE and GEOIP_REGION
