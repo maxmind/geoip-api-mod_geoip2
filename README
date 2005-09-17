@@ -112,3 +112,14 @@ Deny from env=BlockCountry
 # Optional - use if you want to allow a specific IP address from the country you denied
 # See http://httpd.apache.org/docs/1.3/mod/mod_access.html for more details
 # Allow from 10.1.2.3
+
+========= performance =====
+
+For improved performance, you may want to only enable mod_geoip
+for specific HTML pages.  If you want to use the mod_geoip module
+site-wide, you may still be able to only use it for HTML pages
+and not images.  To restrict the pages where mod_geoip is used,
+place the GeoIPEnable on and associated directives inside a
+<Location>, <Files> or <FilesMatch> directive, see:
+http://httpd.apache.org/docs/1.3/mod/core.html#filesmatch
+
