@@ -67,6 +67,7 @@
 #include "http_protocol.h"
 #include "http_log.h"
 #include "ap_config.h"
+#include "apr_strings.h"
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 
@@ -390,6 +391,8 @@ static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *f
 		conf->GeoIPFlags2[i] = GEOIP_MEMORY_CACHE;
 	} else if (!strcmp(arg2, "CheckCache")){
 		conf->GeoIPFlags2[i] = GEOIP_CHECK_CACHE;
+	} else if (!strcmp(arg2, "IndexCache")){
+		conf->GeoIPFlags2[i] = GEOIP_INDEX_CACHE;
 	}
 	return NULL;
 }

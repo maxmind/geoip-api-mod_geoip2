@@ -1,3 +1,6 @@
+	- Added apr_strings.h include (Dann Frazier, Fixes Debian #357387)
+	- Added support for IndexCache
+
 1.1.7 Aug 1st 2005
 	- Copied docs in mod_geoip1.3 in README on how to redirect and block by country
 	- Fixed Garbage characters appearing in GeoIP Postal Code field, this
