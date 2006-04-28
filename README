@@ -1,11 +1,13 @@
-				mod_geoip2 1.1.7
+				mod_geoip2 1.1.8
 				----------------
 
 ======== OVERVIEW =========
 
-mod_geoip2 is an Apache 2.0 module for finding the country that a web request
-originated from.  It uses the GeoIP library and database to perform
-the lookup.  It is free software, licensed under the Apache license.
+mod_geoip2 is an Apache 2.0 module for finding the country and city
+that a web request originated from.  It uses the GeoIP library and
+database to perform the lookup.  It is free software, licensed under
+the Apache license.  It requires the C API, version 1.3.4 and above, see:
+http://www.maxmind.com/app/c
 
 For the Apache 1.3 mod_geoip module, see:
 http://www.maxmind.com/download/geoip/api/mod_geoip/
@@ -47,8 +49,7 @@ Sets GEOIP_COUNTRY_CODE, GEOIP_REGION, GEOIP_CITY, GEOIP_DMA_CODE,
 
 GeoIP ISP Edition:
 Sets GEOIP_ISP
-(Note to ISP edition subscribers, requires non-standard database - contact support@maxmind.com
-for details)
+(Note to ISP edition subscribers, requires new format)
 
 GeoIP Organization Edition:
 Sets GEOIP_ORGANIZATION
@@ -82,6 +83,19 @@ Before making a call to the database, geoip will check the GeoIP.dat file
 to see if there is an updated database before making the call.  This way
 you shouldn't have to restart the Apache server after updating the GeoIP
 data files.
+
+If you would like to turn on partial memory caching, use:
+
+  GeoIPFlags IndexCache
+
+The IndexCache option caches the most frequently accessed index portion of
+the database, resulting in faster lookups than StandardCache, but less
+memory usage than MemoryCache - useful for larger databases such as
+GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
+and Netspeed databases, IndexCache is equivalent to MemoryCache.
+
+Currently, multiple GeoIPFlags options can not be combined.  This
+can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
 
 ========= redirection with mod_geoip and mod_rewrite ========
 
@@ -122,4 +136,9 @@ and not images.  To restrict the pages where mod_geoip is used,
 place the GeoIPEnable on and associated directives inside a
 <Location>, <Files> or <FilesMatch> directive, see:
 http://httpd.apache.org/docs/1.3/mod/core.html#filesmatch
+
+========= Copyright =========
+
+Copyright 2006 MaxMind LLC
+support@maxmind.com
 
