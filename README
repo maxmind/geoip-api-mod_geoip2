@@ -135,7 +135,7 @@ site-wide, you may still be able to only use it for HTML pages
 and not images.  To restrict the pages where mod_geoip is used,
 place the GeoIPEnable on and associated directives inside a
 <Location>, <Files> or <FilesMatch> directive, see:
-http://httpd.apache.org/docs/1.3/mod/core.html#filesmatch
+http://httpd.apache.org/docs/2.0/sections.html
 
 ========= Copyright =========
 
