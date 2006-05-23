@@ -1,4 +1,4 @@
-1.1.8 Apr 28th 2005
+1.1.8 Apr 28th 2006
 	- Updated README file with GeoIPFlags docs and performance tips
 	- Added apr_strings.h include (Dann Frazier, Fixes Debian #357387)
 	- Added support for IndexCache
