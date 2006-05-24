@@ -19,17 +19,56 @@ then make sure that
 
   GeoIPEnable On
 
-is set in your Apache configuration file.
+is set in your Apache configuration file.  This will call the GeoIP Country
+database from its default location (e.g. /usr/local/share/GeoIP/GeoIP.dat)
 
 If you want to specify the a non-default location for the database file(s),
-use
+or what to use other databases besides GeoIP Country, or to pass options,
+use:
 
-  GeoIPDBFile /path/to/GeoIP.dat
+  GeoIPDBFile /path/to/GeoIP.dat GeoIPFlag
 
 For example
 
 GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
 GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat Standard
+
+The possible values for GeoIPFlag are:
+
+The default GeoIPFlag is Standard, which does not perform
+any memory caching (it is the most memory efficient).  To turn
+on memory caching (warning can be memory intensive since
+it is used across all Apache children) use:
+
+  GeoIPDBFile /path/to/GeoIP.dat MemoryCache
+
+We recommend that you use Memory Caching only for the smaller
+database files, such as GeoIP Country and GeoIP ISP.
+
+If you would like to enable checking for GeoIP updates, use
+
+  GeoIPDBFile /path/to/GeoIP.dat CheckCache
+
+Before making a call to the database, geoip will check the GeoIP.dat file
+to see if there is an updated database before making the call.  This way
+you shouldn't have to restart the Apache server after updating the GeoIP
+data files.
+
+If you would like to turn on partial memory caching, use:
+
+  GeoIPDBFile /path/to/GeoIP.dat IndexCache
+
+The IndexCache option caches the most frequently accessed index portion of
+the database, resulting in faster lookups than StandardCache, but less
+memory usage than MemoryCache - useful for larger databases such as
+GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
+and Netspeed databases, IndexCache is equivalent to MemoryCache.
+
+Currently, multiple GeoIPFlags options can not be combined.  This
+can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
+
+
+Output variables set:
 
 GeoIP Country Edition:
 You can retrieve the ISO 3166 Country code from the Apache notes table
@@ -64,38 +103,6 @@ do so use the "GeoIPOutput" configuration directive:
   GeoIPOutput Notes   # Sets Apache notes table only
   GeoIPOutput Env     # Sets Environmental Variable only
   GeoIPOutput All     # Sets both (current default behaviour)
-
-By default it uses GEOIP_STANDARD mode, which does not perform
-any memory caching (it is the most memory efficient).  To turn
-on memory caching (warning can be memory intensive since
-it is used across all Apache children) use:
-
-  GeoIPFlags MemoryCache
-
-We recommend that you use Memory Caching only for the smaller
-database files, such as GeoIP Country and GeoIP ISP.
-
-If you would like to enable checking for GeoIP updates, use
-
-  GeoIPFlags CheckCache
-
-Before making a call to the database, geoip will check the GeoIP.dat file
-to see if there is an updated database before making the call.  This way
-you shouldn't have to restart the Apache server after updating the GeoIP
-data files.
-
-If you would like to turn on partial memory caching, use:
-
-  GeoIPFlags IndexCache
-
-The IndexCache option caches the most frequently accessed index portion of
-the database, resulting in faster lookups than StandardCache, but less
-memory usage than MemoryCache - useful for larger databases such as
-GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
-and Netspeed databases, IndexCache is equivalent to MemoryCache.
-
-Currently, multiple GeoIPFlags options can not be combined.  This
-can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
 
 ========= redirection with mod_geoip and mod_rewrite ========
 
@@ -136,6 +143,11 @@ and not images.  To restrict the pages where mod_geoip is used,
 place the GeoIPEnable on and associated directives inside a
 <Location>, <Files> or <FilesMatch> directive, see:
 http://httpd.apache.org/docs/2.0/sections.html
+
+========= troubleshooting =======
+
+If the module is not working, make sure that the httpd user (e.g. nobody)
+has read access to the GeoIP.dat file, by running the chown or chmod command.
 
 ========= Copyright =========
 
