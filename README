@@ -1,4 +1,4 @@
-				mod_geoip2 1.1.8
+				mod_geoip2 1.1.9
 				----------------
 
 ======== OVERVIEW =========
@@ -73,7 +73,9 @@ Output variables set:
 GeoIP Country Edition:
 You can retrieve the ISO 3166 Country code from the Apache notes table
 under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
-"GEOIP_COUNTRY_CODE".  It also sets the GEOIP_COUNTRY_NAME note and
+"GEOIP_COUNTRY_CODE". 
+You can also retrieve the Continent code from the "GEOIP_CONTINENT_CODE" note or environment variable.
+It also sets the GEOIP_COUNTRY_NAME note and
 environment variable.  If GeoIP does not determine the country
 for an IP address (for example if the IP address is missing
 or is a private IP address), then it will not set the
@@ -83,7 +85,7 @@ GeoIP Region Edition:
 Sets GEOIP_COUNTRY_CODE and GEOIP_REGION
 
 GeoIP City Edition:
-Sets GEOIP_COUNTRY_CODE, GEOIP_REGION, GEOIP_CITY, GEOIP_DMA_CODE,
+Sets GEOIP_CONTINENT_CODE, GEOIP_COUNTRY_CODE, GEOIP_REGION, GEOIP_CITY, GEOIP_DMA_CODE,
         GEOIP_AREA_CODE, GEOIP_LATITUDE, GEOIP_LONGITUDE, GEOIP_POSTAL_CODE
 
 GeoIP ISP Edition:
@@ -103,6 +105,38 @@ do so use the "GeoIPOutput" configuration directive:
   GeoIPOutput Notes   # Sets Apache notes table only
   GeoIPOutput Env     # Sets Environmental Variable only
   GeoIPOutput All     # Sets both (current default behaviour)
+
+By default it uses GEOIP_STANDARD mode, which does not perform
+any memory caching (it is the most memory efficient).  To turn
+on memory caching (warning can be memory intensive since
+it is used across all Apache children) use:
+
+  GeoIPFlags MemoryCache
+
+We recommend that you use Memory Caching only for the smaller
+database files, such as GeoIP Country and GeoIP ISP.
+
+If you would like to enable checking for GeoIP updates, use
+
+  GeoIPFlags CheckCache
+
+Before making a call to the database, geoip will check the GeoIP.dat file
+to see if there is an updated database before making the call.  This way
+you shouldn't have to restart the Apache server after updating the GeoIP
+data files.
+
+If you would like to turn on partial memory caching, use:
+
+  GeoIPFlags IndexCache
+
+The IndexCache option caches the most frequently accessed index portion of
+the database, resulting in faster lookups than StandardCache, but less
+memory usage than MemoryCache - useful for larger databases such as
+GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
+and Netspeed databases, IndexCache is equivalent to MemoryCache.
+
+Currently, multiple GeoIPFlags options can not be combined.  This
+can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
 
 ========= redirection with mod_geoip and mod_rewrite ========
 
@@ -134,6 +168,13 @@ Deny from env=BlockCountry
 # See http://httpd.apache.org/docs/1.3/mod/mod_access.html for more details
 # Allow from 10.1.2.3
 
+========= proxies =========
+
+If you have a backend server in front of a proxy server, and the client IP is in
+the HTTP_X_FORWARDED_FOR variable, then use
+
+GeoIPScanProxyHeaders On
+
 ========= performance =====
 
 For improved performance, you may want to only enable mod_geoip
@@ -151,6 +192,5 @@ has read access to the GeoIP.dat file, by running the chown or chmod command.
 
 ========= Copyright =========
 
-Copyright 2006 MaxMind LLC
+Copyright 2007 MaxMind LLC
 support@maxmind.com
-

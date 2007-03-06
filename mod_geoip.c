@@ -79,6 +79,7 @@ typedef struct {
 	char GeoIPOutput;
 	int GeoIPFlags;
 	int *GeoIPFlags2;
+	int scanProxyHeaders;
 } geoip_server_config_rec;
 
 static const int GEOIP_NONE    = 0;
@@ -112,6 +113,7 @@ static void *create_geoip_server_config( apr_pool_t *p, server_rec *d )
 	conf->GeoIPOutput = GEOIP_INIT;
 	conf->GeoIPFlags = GEOIP_STANDARD;
 	conf->GeoIPFlags2 = NULL;
+	conf->scanProxyHeaders = 0;
 	return (void *)conf;
 }
 
@@ -170,6 +172,7 @@ static int geoip_post_read_request(request_rec *r)
 	char *ipaddr;
 	short int country_id;
 	GeoIP *gip;
+	const char *continent_code;
 	const char *country_code;
 	const char *country_name;
 
@@ -180,6 +183,9 @@ static int geoip_post_read_request(request_rec *r)
 	int i;
 	int netspeed;
 
+	/* For splitting proxy headers */
+	char *ipaddr_ptr = 0;
+	char *comma_ptr;
 
 	cfg = ap_get_module_config(r->server->module_config, &geoip_module);
 
@@ -189,7 +195,37 @@ static int geoip_post_read_request(request_rec *r)
 	if ( !cfg->GeoIPEnabled ) 
 		return DECLINED;
 
-	ipaddr = r->connection->remote_ip;
+	if ( !cfg->scanProxyHeaders ) {
+		ipaddr = r->connection->remote_ip;
+	} else {
+		ap_add_common_vars(r);
+		if ( apr_table_get(r->subprocess_env, "HTTP_CLIENT_IP") ) {
+			ipaddr_ptr = (char *) apr_table_get(r->subprocess_env, "HTTP_CLIENT_IP");
+		} else if ( apr_table_get(r->subprocess_env, "HTTP_X_FORWARDED_FOR") ) {
+			ipaddr_ptr = (char *) apr_table_get(r->subprocess_env, "HTTP_X_FORWARDED_FOR");
+		} else if ( apr_table_get(r->headers_in, "X-Forwarded-For") ) {
+			ipaddr_ptr = (char *) apr_table_get(r->headers_in, "X-Forwarded-For");
+		} else if ( apr_table_get(r->subprocess_env, "HTTP_REMOTE_ADDR") ) {
+			ipaddr_ptr = (char *) apr_table_get(r->subprocess_env, "HTTP_REMOTE_ADDR");
+		}
+		if (!ipaddr_ptr) {
+			ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO,0, r->server, "[mod_geoip]: Error while getting ipaddr from proxy headers. Using REMOTE_ADDR.");
+			ipaddr = r->connection->remote_ip;
+		} else {
+	  		ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO,0, r->server, "[mod_geoip]: IPADDR_PTR: %s", ipaddr_ptr);
+			/* Check to ensure that the HTTP_CLIENT_IP or X-Forwarded-For header is
+			* not a comma separated list of addresses, which would
+			* cause mod_geoip to return no country code. If the
+			* header is a comma separated list, return the first
+			* IP address in the list, which is (hopefully!) the
+			* real client IP. */
+			ipaddr = (char *) calloc(16, sizeof(char));
+			strncpy(ipaddr, ipaddr_ptr, 15);
+			comma_ptr = strchr(ipaddr, ',');
+			if (comma_ptr != 0)
+				*comma_ptr = '\0';
+		}
+	}
 
 	if ( !cfg->gips ) {
 		if ( cfg->GeoIPFilenames != NULL ) {
@@ -212,7 +248,7 @@ static int geoip_post_read_request(request_rec *r)
 			cfg->numGeoIPFiles = 1;
 		}
 	}
-	for (i = 0; i < cfg->numGeoIPFiles;i++){
+	for (i = 0; i < cfg->numGeoIPFiles;i++) {
         	databaseType = GeoIP_database_edition(cfg->gips[i]);
 		switch (databaseType){
                 case GEOIP_NETSPEED_EDITION:
@@ -241,6 +277,7 @@ static int geoip_post_read_request(request_rec *r)
 			country_id = GeoIP_country_id_by_addr( cfg->gips[i], ipaddr );
 
 			/* Lookup the Code and the Name with the ID */
+			continent_code = GeoIP_country_continent[country_id];
 			country_code = GeoIP_country_code[country_id];
 			country_name = GeoIP_country_name[country_id];
 
@@ -248,10 +285,12 @@ static int geoip_post_read_request(request_rec *r)
 			if (cfg->GeoIPFilenames == 0){cfg->GeoIPFilenames = 0;}
 			/* Set it for our user */
 			if (cfg->GeoIPOutput & GEOIP_NOTES){
+			        apr_table_setn( r->notes,          "GEOIP_CONTINENT_CODE", continent_code );
 			        apr_table_setn( r->notes,          "GEOIP_COUNTRY_CODE", country_code );
 			        apr_table_setn( r->notes,          "GEOIP_COUNTRY_NAME", country_name );
 			}
 			if (cfg->GeoIPOutput & GEOIP_ENV){
+			        apr_table_setn( r->subprocess_env, "GEOIP_CONTINENT_CODE", continent_code );
 				apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code );
 				apr_table_setn( r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name );
 			}
@@ -278,6 +317,7 @@ static int geoip_post_read_request(request_rec *r)
 			sprintf(dmacodestr,"%d",gir->dma_code);
 			sprintf(areacodestr,"%d",gir->area_code);
 			if (cfg->GeoIPOutput & GEOIP_NOTES){
+				apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE", gir->continent_code);
 				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", gir->country_code);
 				apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
 				if (gir->region != NULL){
@@ -290,6 +330,7 @@ static int geoip_post_read_request(request_rec *r)
 				apr_table_setn(r->notes,"GEOIP_AREA_CODE",areacodestr);
 			}
 			if (cfg->GeoIPOutput & GEOIP_ENV){
+				apr_table_setn(r->subprocess_env, "GEOIP_CONTINENT_CODE", gir->continent_code);
 				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", gir->country_code);
 				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
 				if (gir->region != NULL){
@@ -355,7 +396,7 @@ static int geoip_post_read_request(request_rec *r)
 }
 
 
-static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
+static const char *geoip_scanproxy(cmd_parms *cmd, void *dummy, int arg)
 {
 	geoip_server_config_rec *conf = (geoip_server_config_rec *)
 	ap_get_module_config(cmd->server->module_config, &geoip_module);
@@ -363,6 +404,17 @@ static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
 	if (!conf)
 		return "mod_geoip: server structure not allocated";
 
+	conf->scanProxyHeaders = arg;
+	return NULL;
+}
+
+static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
+{
+	geoip_server_config_rec *conf = (geoip_server_config_rec *)
+	ap_get_module_config(cmd->server->module_config, &geoip_module);
+
+	if (!conf)
+		return "mod_geoip: server structure not allocated";
 
 	conf->GeoIPEnabled = arg;
 	return NULL;
@@ -431,6 +483,7 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 
 static const command_rec geoip_cmds[] = 
 {
+	AP_INIT_FLAG( "GeoIPScanProxyHeaders", geoip_scanproxy, NULL, OR_FILEINFO, "Get IP from HTTP_CLIENT IP or X-Forwarded-For"),
 	AP_INIT_FLAG( "GeoIPEnable", set_geoip_enable,   NULL, OR_FILEINFO, "Turn on mod_geoip"),
 	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
 	AP_INIT_ITERATE("GeoIPOutput", set_geoip_output, NULL, OR_FILEINFO, "Specify output method(s)"),
