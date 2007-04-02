@@ -1,3 +1,8 @@
+	- Added support for GEOIP_CONTINENT_CODE for GeoIP Country and City (Frank Mather)
+	- Added GeoIPScanProxyHeaders directive to handle X-Forwarded-For headers (Frank Mather)
+	- Updated documentation to specify that GeoIPFlags need to be passed
+	  as second parameter to GeoIPDBFile, instead of using the GeoIPFlags directive
+
 1.1.8 Apr 28th 2006
 	- Updated README file with GeoIPFlags docs and performance tips
 	- Added apr_strings.h include (Dann Frazier, Fixes Debian #357387)
