@@ -249,7 +249,7 @@ static int geoip_post_read_request(request_rec *r)
 		}
 	}
 	for (i = 0; i < cfg->numGeoIPFiles;i++) {
-        	databaseType = GeoIP_database_edition(cfg->gips[i]);
+		databaseType = cfg->gips[ i ] ? GeoIP_database_edition( cfg->gips[ i ] ) : -1;  /* -1 is "magic value" in case file not found */
 		switch (databaseType){
                 case GEOIP_NETSPEED_EDITION:
 			netspeed = GeoIP_id_by_addr (cfg->gips[i], ipaddr);
