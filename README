@@ -75,6 +75,8 @@ You can retrieve the ISO 3166 Country code from the Apache notes table
 under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
 "GEOIP_COUNTRY_CODE". 
 You can also retrieve the Continent code from the "GEOIP_CONTINENT_CODE" note or environment variable.
+Possible continent codes are AF, AS, EU, NA, OC, SA for Africa, Asia, Europe, North America, Oceania
+and South America.
 It also sets the GEOIP_COUNTRY_NAME note and
 environment variable.  If GeoIP does not determine the country
 for an IP address (for example if the IP address is missing
