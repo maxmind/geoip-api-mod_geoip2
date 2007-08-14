@@ -1,4 +1,4 @@
-				mod_geoip2 1.1.9
+				mod_geoip2 1.2.0
 				----------------
 
 ======== OVERVIEW =========
@@ -107,38 +107,6 @@ do so use the "GeoIPOutput" configuration directive:
   GeoIPOutput Notes   # Sets Apache notes table only
   GeoIPOutput Env     # Sets Environmental Variable only
   GeoIPOutput All     # Sets both (current default behaviour)
-
-By default it uses GEOIP_STANDARD mode, which does not perform
-any memory caching (it is the most memory efficient).  To turn
-on memory caching (warning can be memory intensive since
-it is used across all Apache children) use:
-
-  GeoIPFlags MemoryCache
-
-We recommend that you use Memory Caching only for the smaller
-database files, such as GeoIP Country and GeoIP ISP.
-
-If you would like to enable checking for GeoIP updates, use
-
-  GeoIPFlags CheckCache
-
-Before making a call to the database, geoip will check the GeoIP.dat file
-to see if there is an updated database before making the call.  This way
-you shouldn't have to restart the Apache server after updating the GeoIP
-data files.
-
-If you would like to turn on partial memory caching, use:
-
-  GeoIPFlags IndexCache
-
-The IndexCache option caches the most frequently accessed index portion of
-the database, resulting in faster lookups than StandardCache, but less
-memory usage than MemoryCache - useful for larger databases such as
-GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
-and Netspeed databases, IndexCache is equivalent to MemoryCache.
-
-Currently, multiple GeoIPFlags options can not be combined.  This
-can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
 
 ========= redirection with mod_geoip and mod_rewrite ========
 
