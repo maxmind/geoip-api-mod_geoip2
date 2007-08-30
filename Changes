@@ -1,3 +1,4 @@
+1.2.0 Aug 30th 2007
 	- Fix segfault issue if GeoIP.dat file cannot be opened (Vladimir Sedlacek)
 	- Added support for GEOIP_CONTINENT_CODE for GeoIP Country and City (Frank Mather)
 	- Added GeoIPScanProxyHeaders directive to handle X-Forwarded-For headers (Frank Mather)
