@@ -67,3 +67,6 @@ Make sure that the apxs script belongs to the Apache server you are using.
 These error messages result from using a Apache 1.3 apxs script with
 a Apache 2.0 server.
 
+If you get a "libGeoIP.so.1: cannot open shared object file: No such file or
+directory" error, add /usr/local/lib to /etc/ld.so.conf then run
+/sbin/ldconfig /etc/ld.so.conf
