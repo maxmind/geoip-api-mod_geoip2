@@ -67,6 +67,10 @@ and Netspeed databases, IndexCache is equivalent to MemoryCache.
 Currently, multiple GeoIPFlags options can not be combined.  This
 can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
 
+You may change the output charset fom latin1 ( iso-8859-1 ) to utf8 with:
+
+  GeoIPEnableUTF8 On
+
 
 Output variables set:
 

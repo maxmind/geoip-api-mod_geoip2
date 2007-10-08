@@ -76,6 +76,7 @@ typedef struct {
 	int numGeoIPFiles;
 	char **GeoIPFilenames;
 	int GeoIPEnabled;
+	int GeoIPEnableUTF8;
 	char GeoIPOutput;
 	int GeoIPFlags;
 	int *GeoIPFlags2;
@@ -110,6 +111,7 @@ static void *create_geoip_server_config( apr_pool_t *p, server_rec *d )
 	conf->numGeoIPFiles = 0;
 	conf->GeoIPFilenames = NULL;
 	conf->GeoIPEnabled = 0;
+	conf->GeoIPEnableUTF8 = 0;
 	conf->GeoIPOutput = GEOIP_INIT;
 	conf->GeoIPFlags = GEOIP_STANDARD;
 	conf->GeoIPFlags2 = NULL;
@@ -142,7 +144,13 @@ static void geoip_child_init(apr_pool_t *p, server_rec *s)
 			cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
 			for (i = 0;i < cfg->numGeoIPFiles;i++){
 				cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i]);
-				if(!cfg->gips[i]) {
+
+				if(cfg->gips[i]) {
+					if (cfg->GeoIPEnableUTF8) {
+						GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8 );
+					}
+				}
+        else {
 					ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
 					return;
 				}
@@ -232,7 +240,13 @@ static int geoip_post_read_request(request_rec *r)
 			cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
 			for (i = 0;i < cfg->numGeoIPFiles;i++){
 				cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i]);
-				if(!cfg->gips[i]) {
+				
+				if(cfg->gips[i]) {
+					if (cfg->GeoIPEnableUTF8) {
+						GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8 );
+					}
+				}
+			  else {
 					ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
 					return DECLINED;
 				}
@@ -420,6 +434,18 @@ static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
 	return NULL;
 }
 
+static const char *set_geoip_enable_utf8(cmd_parms *cmd, void *dummy, int arg)
+{
+	geoip_server_config_rec *conf = (geoip_server_config_rec *)
+	ap_get_module_config(cmd->server->module_config, &geoip_module);
+
+	if (!conf)
+		return "mod_geoip: server structure not allocated";
+
+	conf->GeoIPEnableUTF8 = arg;
+	return NULL;
+}
+
 
 static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *filename,const char *arg2)
 {
@@ -474,6 +500,7 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 	dcfg->numGeoIPFiles = 0;
 	dcfg->GeoIPFilenames = NULL;
 	dcfg->GeoIPEnabled = 0;
+	dcfg->GeoIPEnableUTF8 = 0;
 	dcfg->GeoIPOutput = GEOIP_INIT;
 	dcfg->GeoIPFlags = GEOIP_STANDARD;
 	dcfg->GeoIPFlags2 = NULL;
@@ -485,6 +512,7 @@ static const command_rec geoip_cmds[] =
 {
 	AP_INIT_FLAG( "GeoIPScanProxyHeaders", geoip_scanproxy, NULL, OR_FILEINFO, "Get IP from HTTP_CLIENT IP or X-Forwarded-For"),
 	AP_INIT_FLAG( "GeoIPEnable", set_geoip_enable,   NULL, OR_FILEINFO, "Turn on mod_geoip"),
+	AP_INIT_FLAG( "GeoIPEnableUTF8", set_geoip_enable_utf8,   NULL, OR_FILEINFO, "Turn on utf8 characters for city names"),
 	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
 	AP_INIT_ITERATE("GeoIPOutput", set_geoip_output, NULL, OR_FILEINFO, "Specify output method(s)"),
 	{NULL}
