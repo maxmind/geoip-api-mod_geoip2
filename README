@@ -164,6 +164,11 @@ http://httpd.apache.org/docs/2.0/sections.html
 If the module is not working, make sure that the httpd user (e.g. nobody)
 has read access to the GeoIP.dat file, by running the chown or chmod command.
 
+Also we have received reports of segfaults when using the GeoIP configuration
+directives in .htaccess.  Removing the GeoIPEnable, etc from .htaccess and
+placing it in httpd.conf fixes the problem.  Not sure why there is an issue
+with .htaccess, comments and suggestions welcome.
+
 ========= Copyright =========
 
 Copyright 2007 MaxMind LLC
