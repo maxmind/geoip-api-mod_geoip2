@@ -49,7 +49,7 @@
 
 /* geoip module
  *
- * Version 1.1.1
+ * Version 1.2.1
  *
  * This module sets an environment variable to the remote country
  * based on the requestor's IP address.  It uses the GeoIP library
@@ -70,6 +70,10 @@
 #include "apr_strings.h"
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+
+typedef struct {
+  int GeoIPEnabled;
+} geoip_dir_config_rec;
 
 typedef struct {
 	GeoIP **gips;
@@ -100,6 +104,22 @@ const char *netspeedstring;
 
 module AP_MODULE_DECLARE_DATA geoip_module;
 
+/* create a disabled directory entry */
+
+static void *geoip_create_dir_config(apr_pool_t *p, char *d)
+{
+  
+  geoip_dir_config_rec *dcfg;
+
+  dcfg = (geoip_dir_config_rec *) apr_pcalloc(p, sizeof(geoip_dir_config_rec));
+  dcfg->GeoIPEnabled = 0;
+
+  return dcfg;
+}
+
+
+/* create a standard disabled server entry */
+
 static void *create_geoip_server_config( apr_pool_t *p, server_rec *d )
 {
 	geoip_server_config_rec *conf = apr_pcalloc(p, sizeof(geoip_server_config_rec));
@@ -120,16 +140,23 @@ static void *create_geoip_server_config( apr_pool_t *p, server_rec *d )
 }
 
 
-static apr_status_t geoip_cleanup(void *cfgdata)
+static apr_status_t 
+geoip_cleanup(void *cfgdata)
 {
-	int i;
-	geoip_server_config_rec *cfg = (geoip_server_config_rec *)cfgdata;
-	for (i = 0;i < cfg->numGeoIPFiles;i++){
-		GeoIP_delete( cfg->gips[i] );
+	int             i;
+	geoip_server_config_rec *cfg = (geoip_server_config_rec *) cfgdata;
+	if (cfg->gips) {
+		for (i = 0; i < cfg->numGeoIPFiles; i++) {
+			if (cfg->gips[i]) {
+				GeoIP_delete(cfg->gips[i]);
+				cfg->gips[i] = NULL;
+			}
+		}
+		free(cfg->gips);
+		cfg->gips = NULL;
 	}
 	return APR_SUCCESS;
 }
-
 
 static void geoip_child_init(apr_pool_t *p, server_rec *s)
 {
@@ -167,14 +194,61 @@ static void geoip_child_init(apr_pool_t *p, server_rec *s)
 		}
 	}
 
-
 	apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
 
 }
 
+/* map into the first apache */
+static int 
+geoip_post_config(
+		  apr_pool_t * p, apr_pool_t * plog,
+		  apr_pool_t * ptemp, server_rec * s)
+{
+
+	geoip_child_init(p, s);
+	return OK;
+}
 
 
-static int geoip_post_read_request(request_rec *r)
+static int geoip_header_parser(request_rec *r);
+
+static int geoip_post_read_request(request_rec *r){
+  geoip_server_config_rec *cfg;
+	cfg = ap_get_module_config(r->server->module_config, &geoip_module);
+
+	if ( !cfg ) 
+		return DECLINED;
+
+  if ( !cfg->GeoIPEnabled )
+	  return DECLINED;
+
+  return geoip_header_parser(r);
+}
+
+
+static int
+geoip_per_dir(request_rec * r)
+{
+
+	geoip_dir_config_rec *dcfg;
+	dcfg = ap_get_module_config(r->per_dir_config, &geoip_module);
+
+	geoip_server_config_rec *cfg =
+	ap_get_module_config(r->server->module_config, &geoip_module);
+	if (cfg && cfg->GeoIPEnabled)
+		return DECLINED;
+
+	if (!dcfg)
+		return DECLINED;
+
+	if (!dcfg->GeoIPEnabled)
+		return DECLINED;
+
+	return geoip_header_parser(r);
+}
+
+
+static int geoip_header_parser(request_rec *r)
 {
 	char *orgorisp;
 	char *ipaddr;
@@ -185,6 +259,7 @@ static int geoip_post_read_request(request_rec *r)
 	const char *country_name;
 
 	geoip_server_config_rec *cfg;
+
 	unsigned char databaseType;
 	GeoIPRecord * gir;
 	GeoIPRegion * giregion;
@@ -198,9 +273,6 @@ static int geoip_post_read_request(request_rec *r)
 	cfg = ap_get_module_config(r->server->module_config, &geoip_module);
 
 	if ( !cfg ) 
-		return DECLINED;
-
-	if ( !cfg->GeoIPEnabled ) 
 		return DECLINED;
 
 	if ( !cfg->scanProxyHeaders ) {
@@ -422,8 +494,17 @@ static const char *geoip_scanproxy(cmd_parms *cmd, void *dummy, int arg)
 	return NULL;
 }
 
-static const char *set_geoip_enable(cmd_parms *cmd, void *dummy, int arg)
+static const char *
+set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
 {
+
+	/* is per directory config? */
+	if (cmd->path) {
+		geoip_dir_config_rec *dcfg = dummy;
+		dcfg->GeoIPEnabled = arg;
+		return NULL;
+	}
+	/* no then it is server config */
 	geoip_server_config_rec *conf = (geoip_server_config_rec *)
 	ap_get_module_config(cmd->server->module_config, &geoip_module);
 
@@ -471,12 +552,15 @@ static const char *set_geoip_filename(cmd_parms *cmd, void *dummy, const char *f
 		conf->GeoIPFlags2[i] = GEOIP_CHECK_CACHE;
 	} else if (!strcmp(arg2, "IndexCache")){
 		conf->GeoIPFlags2[i] = GEOIP_INDEX_CACHE;
+	} else if (!strcmp(arg2, "MMapCache")){
+		conf->GeoIPFlags2[i] = GEOIP_MMAP_CACHE;
 	}
 	return NULL;
 }
 
 static const char *set_geoip_output(cmd_parms *cmd, void *dummy,const char *arg) {
        	geoip_server_config_rec *cfg = (geoip_server_config_rec *) ap_get_module_config(cmd->server->module_config, &geoip_module);
+
   	if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
     		/* was set to default, clear so can be reset with user specified values */
     		cfg->GeoIPOutput = GEOIP_NONE;
@@ -508,30 +592,50 @@ static void *make_geoip(apr_pool_t *p, server_rec *d)
 }
 
 
-static const command_rec geoip_cmds[] = 
+static const command_rec geoip_cmds[] =
 {
-	AP_INIT_FLAG( "GeoIPScanProxyHeaders", geoip_scanproxy, NULL, OR_FILEINFO, "Get IP from HTTP_CLIENT IP or X-Forwarded-For"),
-	AP_INIT_FLAG( "GeoIPEnable", set_geoip_enable,   NULL, OR_FILEINFO, "Turn on mod_geoip"),
-	AP_INIT_FLAG( "GeoIPEnableUTF8", set_geoip_enable_utf8,   NULL, OR_FILEINFO, "Turn on utf8 characters for city names"),
-	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, OR_FILEINFO, "Path to GeoIP Data File"),
-	AP_INIT_ITERATE("GeoIPOutput", set_geoip_output, NULL, OR_FILEINFO, "Specify output method(s)"),
+	AP_INIT_FLAG("GeoIPScanProxyHeaders", geoip_scanproxy, NULL, RSRC_CONF, "Get IP from HTTP_CLIENT IP or X-Forwarded-For"),
+	AP_INIT_FLAG("GeoIPEnable", set_geoip_enable, NULL, RSRC_CONF | OR_FILEINFO, "Turn on mod_geoip"),
+	AP_INIT_FLAG("GeoIPEnableUTF8", set_geoip_enable_utf8, NULL, RSRC_CONF, "Turn on utf8 characters for city names"),
+	AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, RSRC_CONF, "Path to GeoIP Data File"),
+	AP_INIT_ITERATE("GeoIPOutput", set_geoip_output, NULL, RSRC_CONF, "Specify output method(s)"),
 	{NULL}
 };
 
 
 static void geoip_register_hooks(apr_pool_t *p)
 {
-	ap_hook_post_read_request( geoip_post_read_request, NULL, NULL, APR_HOOK_MIDDLE );
-	ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );
+  /* make sure we run before mod_rewrite's handler */
+   static const char * const aszSucc[]={ "mod_rewrite.c", NULL };
+  
+  /* we have two entry points, the header_parser hook, right before
+   * the authentication hook used for Dirctory specific enabled geoiplookups
+   * or right before directory rewrite rules.
+   */
+  ap_hook_header_parser( geoip_per_dir, NULL, NULL, APR_HOOK_FIRST );
+  
+  /* and the servectly wide hook, after reading the request. Perfecly
+   * suitable to serve serverwide mod_rewrite actions
+   */
+  ap_hook_post_read_request( geoip_post_read_request, NULL, aszSucc, APR_HOOK_MIDDLE );
+
+  /* setup our childs GeoIP database once for every child */
+  //  ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );  
+
+
+  static const char * const list[]={ "mod_geoip.c", NULL };
+  /* mmap the database(s) into the master process */
+  ap_hook_post_config( geoip_post_config,   NULL, NULL, APR_HOOK_MIDDLE );  
+
 }
 
 
 /* Dispatch list for API hooks */
 module AP_MODULE_DECLARE_DATA geoip_module = {
 	STANDARD20_MODULE_STUFF, 
-	NULL,                        /* create per-dir    config structures */
+	geoip_create_dir_config,     /* create per-dir    config structures */
 	NULL,                        /* merge  per-dir    config structures */
-	make_geoip,                  /* create per-server config structures */
+  make_geoip,                  /* create per-server config structures */
 	NULL,                        /* merge  per-server config structures */
 	geoip_cmds,                  /* table of config file commands       */
 	geoip_register_hooks         /* register hooks                      */
