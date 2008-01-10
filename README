@@ -235,6 +235,10 @@ http://httpd.apache.org/docs/2.0/sections.html
 If the module is not working, make sure that the httpd user (e.g. nobody)
 has read access to the GeoIP.dat file, by running the chown or chmod command.
 
+If the GeoIP variables do not show up, please make sure that the client
+IP address is not on a private network such as 10.0.0.0/8, 172.16.0.0/12
+or 192.168.0.0/16.  GeoIP only reports the country of external IP addresses.
+
 ========= Copyright =========
 
 Copyright 2007 MaxMind LLC
