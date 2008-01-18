@@ -151,6 +151,9 @@ the HTTP_X_FORWARDED_FOR variable, then use
 
 GeoIPScanProxyHeaders On
 
+This only works if the first IP in the HTTP_X_FORWARDED_FOR list is the
+actual clientIP that you want to lookup.
+
 
 ========= Server vs Directory context =========
 
