@@ -1,8 +1,7 @@
 1.2.1 Dec 17th 2007
 	! Notice, that all directives are _only_ valid in server context. Expect GeoIPEnabled. Check you configuraion with apachectl configtest ( Boris Zentner )
 	- Added MMapCache option (Boris Zentner)
-	- Change GeoIPEnabled from a serverwide option to a server/directory/location
-keyword. (Boris Zentner)
+	- Change GeoIPEnabled from a serverwide option to a server/directory/location keyword. (Boris Zentner)
 	- Fix a small memleak per child. Allocated in geoip_child_init free in geoip_cleanup (Boris Zentner)
 	- GeoIP databases get used serverwide now. Not per child. See the README. (Boris Zentner)
 	- Update README with more examples (Boris Zentner)
