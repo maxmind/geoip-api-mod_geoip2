@@ -1,3 +1,5 @@
+	- NetWare/Win32 compilation fixes, since can't declare vars in middle of code (Guenter Knauf)
+
 1.2.1 Dec 17th 2007
 	! Notice, that all directives are _only_ valid in server context. Expect GeoIPEnabled. Check you configuraion with apachectl configtest ( Boris Zentner )
 	- Added MMapCache option (Boris Zentner)

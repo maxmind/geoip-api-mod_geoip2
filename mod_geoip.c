@@ -230,11 +230,11 @@ static int
 geoip_per_dir(request_rec * r)
 {
 
-	geoip_dir_config_rec *dcfg;
-	dcfg = ap_get_module_config(r->per_dir_config, &geoip_module);
-
+	geoip_dir_config_rec *dcfg =
+	ap_get_module_config(r->per_dir_config, &geoip_module);
 	geoip_server_config_rec *cfg =
 	ap_get_module_config(r->server->module_config, &geoip_module);
+
 	if (cfg && cfg->GeoIPEnabled)
 		return DECLINED;
 
@@ -497,6 +497,7 @@ static const char *geoip_scanproxy(cmd_parms *cmd, void *dummy, int arg)
 static const char *
 set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
 {
+	geoip_server_config_rec *conf;
 
 	/* is per directory config? */
 	if (cmd->path) {
@@ -505,7 +506,7 @@ set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
 		return NULL;
 	}
 	/* no then it is server config */
-	geoip_server_config_rec *conf = (geoip_server_config_rec *)
+	conf = (geoip_server_config_rec *)
 	ap_get_module_config(cmd->server->module_config, &geoip_module);
 
 	if (!conf)
@@ -623,7 +624,7 @@ static void geoip_register_hooks(apr_pool_t *p)
   //  ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );  
 
 
-  static const char * const list[]={ "mod_geoip.c", NULL };
+  // static const char * const list[]={ "mod_geoip.c", NULL };
   /* mmap the database(s) into the master process */
   ap_hook_post_config( geoip_post_config,   NULL, NULL, APR_HOOK_MIDDLE );  
 
@@ -635,7 +636,7 @@ module AP_MODULE_DECLARE_DATA geoip_module = {
 	STANDARD20_MODULE_STUFF, 
 	geoip_create_dir_config,     /* create per-dir    config structures */
 	NULL,                        /* merge  per-dir    config structures */
-  make_geoip,                  /* create per-server config structures */
+	make_geoip,                  /* create per-server config structures */
 	NULL,                        /* merge  per-server config structures */
 	geoip_cmds,                  /* table of config file commands       */
 	geoip_register_hooks         /* register hooks                      */
