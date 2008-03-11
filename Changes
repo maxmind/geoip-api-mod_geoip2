@@ -1,3 +1,4 @@
+	- Slight performance increase - don't make per_dir ap_get_module_config call where we return DECLINED because cfg->GeoIPEnabled is true (Guenter Knauf)
 	- NetWare/Win32 compilation fixes, since can't declare vars in middle of code (Guenter Knauf)
 
 1.2.1 Dec 17th 2007

@@ -230,14 +230,14 @@ static int
 geoip_per_dir(request_rec * r)
 {
 
-	geoip_dir_config_rec *dcfg =
-	ap_get_module_config(r->per_dir_config, &geoip_module);
+	geoip_dir_config_rec *dcfg;
 	geoip_server_config_rec *cfg =
 	ap_get_module_config(r->server->module_config, &geoip_module);
 
 	if (cfg && cfg->GeoIPEnabled)
 		return DECLINED;
 
+	dcfg = ap_get_module_config(r->per_dir_config, &geoip_module);
 	if (!dcfg)
 		return DECLINED;
 
