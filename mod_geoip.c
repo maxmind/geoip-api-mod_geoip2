@@ -158,7 +158,8 @@ geoip_cleanup(void *cfgdata)
 	return APR_SUCCESS;
 }
 
-static void geoip_child_init(apr_pool_t *p, server_rec *s)
+/* initialize geoip once per server ( even virtal server! ) */
+static void geoip_server_init(apr_pool_t *p, server_rec *s)
 {
 	geoip_server_config_rec *cfg;
 	int i;
@@ -198,6 +199,51 @@ static void geoip_child_init(apr_pool_t *p, server_rec *s)
 
 }
 
+
+static void
+geoip_child_init(apr_pool_t * p, server_rec * s)
+{
+  geoip_server_config_rec *cfg;
+  int             i, flags;
+  cfg = (geoip_server_config_rec *)
+    ap_get_module_config(s->module_config, &geoip_module);
+
+  if (cfg->gips) {
+    if (cfg->GeoIPFilenames != NULL) {
+      for (i = 0; i < cfg->numGeoIPFiles; i++) {
+	flags = (cfg->GeoIPFlags2[i] == GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i];
+	if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE))
+          continue;
+	  if (cfg->gips[i]) {
+	    GeoIP_delete(cfg->gips[i]);
+          }
+	  cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], flags);
+
+	  if (cfg->gips[i]) {
+	    if (cfg->GeoIPEnableUTF8) {
+	      GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
+	    }
+	  }
+	  else {
+	    ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "[mod_geoip]: Error while opening data file %s", cfg->GeoIPFilenames[i]);
+	    return;
+	  }
+	}     
+    }
+    else {
+      if (cfg->gips[0])
+	GeoIP_delete(cfg->gips[0]);
+      cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
+      if (!cfg->gips[0]) {
+	ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "[mod_geoip]: Error while opening data file");
+	return;
+      }
+      cfg->numGeoIPFiles = 1;
+    }
+  }
+}
+
+
 /* map into the first apache */
 static int 
 geoip_post_config(
@@ -205,7 +251,7 @@ geoip_post_config(
 		  apr_pool_t * ptemp, server_rec * s)
 {
 
-	geoip_child_init(p, s);
+	geoip_server_init(p, s);
 	return OK;
 }
 
@@ -621,7 +667,7 @@ static void geoip_register_hooks(apr_pool_t *p)
   ap_hook_post_read_request( geoip_post_read_request, NULL, aszSucc, APR_HOOK_MIDDLE );
 
   /* setup our childs GeoIP database once for every child */
-  //  ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );  
+  ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );  
 
 
   // static const char * const list[]={ "mod_geoip.c", NULL };
