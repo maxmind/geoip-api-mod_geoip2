@@ -1,7 +1,10 @@
+1.2.3 Apr 26th 2008
 	- Skip files that we can not open for some reason ( permission/typo ). Check and skip empty slots in geoip_header_parser ( Boris Zentner )
-	- Fix race condition for IO based caches like Standard. MMapCache and MemoryCache are not affected. ( Boris Zentner )
 	- Slight performance increase - don't make per_dir ap_get_module_config call where we return DECLINED because cfg->GeoIPEnabled is true (Guenter Knauf)
 	- NetWare/Win32 compilation fixes, since can't declare vars in middle of code (Guenter Knauf)
+
+1.2.2 Mar 18th 2008
+	- Fix race condition for IO based caches like Standard. MMapCache and MemoryCache are not affected. ( Boris Zentner )
 
 1.2.1 Dec 17th 2007
 	! Notice, that all directives are _only_ valid in server context. Expect GeoIPEnabled. Check you configuraion with apachectl configtest ( Boris Zentner )
