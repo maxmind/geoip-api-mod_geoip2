@@ -1,3 +1,4 @@
+  - Try to run always beetween mod_setenvif and mod_rewrite. ( Boris Zentner ) 
 1.2.3 Apr 26th 2008
 	- Skip files that we can not open for some reason ( permission/typo ). Check and skip empty slots in geoip_header_parser ( Boris Zentner )
 	- Slight performance increase - don't make per_dir ap_get_module_config call where we return DECLINED because cfg->GeoIPEnabled is true (Guenter Knauf)

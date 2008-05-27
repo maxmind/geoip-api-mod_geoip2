@@ -674,6 +674,8 @@ static const command_rec geoip_cmds[] =
 
 static void geoip_register_hooks(apr_pool_t *p)
 {
+  /* make sure we run before mod_setenvif's handler */
+   static const char * const aszPred[]={ "mod_setenvif.c", NULL };
   /* make sure we run before mod_rewrite's handler */
    static const char * const aszSucc[]={ "mod_rewrite.c", NULL };
   
@@ -681,12 +683,12 @@ static void geoip_register_hooks(apr_pool_t *p)
    * the authentication hook used for Dirctory specific enabled geoiplookups
    * or right before directory rewrite rules.
    */
-  ap_hook_header_parser( geoip_per_dir, NULL, NULL, APR_HOOK_FIRST );
+  ap_hook_header_parser( geoip_per_dir, aszPred, NULL, APR_HOOK_FIRST );
   
   /* and the servectly wide hook, after reading the request. Perfecly
    * suitable to serve serverwide mod_rewrite actions
    */
-  ap_hook_post_read_request( geoip_post_read_request, NULL, aszSucc, APR_HOOK_MIDDLE );
+  ap_hook_post_read_request( geoip_post_read_request, aszPred, aszSucc, APR_HOOK_MIDDLE );
 
   /* setup our childs GeoIP database once for every child */
   ap_hook_child_init(        geoip_child_init,        NULL, NULL, APR_HOOK_MIDDLE );  
