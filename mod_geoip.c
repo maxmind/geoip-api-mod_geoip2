@@ -388,6 +388,13 @@ geoip_header_parser(request_rec * r)
 	}
 #endif
 
+  if (cfg->GeoIPOutput & GEOIP_NOTES) {
+		         apr_table_setn(r->notes, "GEOIP_ADDR", ipaddr);
+  }
+  if (cfg->GeoIPOutput & GEOIP_ENV) { 
+         apr_table_setn(r->subprocess_env, "GEOIP_ADDR", ipaddr);
+  }
+
 	for (i = 0; i < cfg->numGeoIPFiles; i++) {
 
 		/*

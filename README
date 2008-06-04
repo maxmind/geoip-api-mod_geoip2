@@ -1,4 +1,4 @@
-				mod_geoip2 1.2.1
+				mod_geoip2 1.2.3
 				----------------
 
 ======== OVERVIEW =========
@@ -75,6 +75,14 @@ You may change the output charset fom latin1 ( iso-8859-1 ) to utf8 with:
 
 
 Output variables set:
+
+GEOIP_ADDR is the address used to calculate the geoip information. Either the ipaddress you came 
+from, or if you use GeoIPScanProxyHeaders On,  the first defined environment 
+variable HTTP_CLIENT_IP, HTTP_X_FORWARDED_FOR, the http header X-Forwarded-For or the environment 
+variable HTTP_REMOTE_ADDR.
+
+GEOIP_ADDR is always exported, when mod_geoip is used.
+
 
 GeoIP Country Edition:
 You can retrieve the ISO 3166 Country code from the Apache notes table
