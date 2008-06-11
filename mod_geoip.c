@@ -433,27 +433,29 @@ geoip_header_parser(request_rec * r)
 			/* Get the Country ID */
 			country_id = GeoIP_country_id_by_addr(cfg->gips[i], ipaddr);
 
-			/* Lookup the Code and the Name with the ID */
-			continent_code = GeoIP_country_continent[country_id];
-			country_code = GeoIP_country_code[country_id];
-			country_name = GeoIP_country_name[country_id];
+      if ( country_id > 0 ) {
+			  /* Lookup the Code and the Name with the ID */
+			  continent_code = GeoIP_country_continent[country_id];
+			  country_code = GeoIP_country_code[country_id];
+			  country_name = GeoIP_country_name[country_id];
 
-			if (cfg->numGeoIPFiles == 0) {
-				cfg->numGeoIPFiles = 0;
-			}
-			if (cfg->GeoIPFilenames == 0) {
-				cfg->GeoIPFilenames = 0;
-			}
-			/* Set it for our user */
-			if (cfg->GeoIPOutput & GEOIP_NOTES) {
-				apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE", continent_code);
-				apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", country_code);
-				apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", country_name);
-			}
-			if (cfg->GeoIPOutput & GEOIP_ENV) {
-				apr_table_setn(r->subprocess_env, "GEOIP_CONTINENT_CODE", continent_code);
-				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code);
-				apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name);
+			  if (cfg->numGeoIPFiles == 0) {
+				  cfg->numGeoIPFiles = 0;
+			  }
+			  if (cfg->GeoIPFilenames == 0) {
+				  cfg->GeoIPFilenames = 0;
+			  }
+			  /* Set it for our user */
+			  if (cfg->GeoIPOutput & GEOIP_NOTES) {
+				  apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE", continent_code);
+		  		apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE", country_code);
+			  	apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", country_name);
+			  }
+			  if (cfg->GeoIPOutput & GEOIP_ENV) {
+				  apr_table_setn(r->subprocess_env, "GEOIP_CONTINENT_CODE", continent_code);
+				  apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE", country_code);
+				  apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", country_name);
+			  }
 			}
 			break;
 		case GEOIP_REGION_EDITION_REV0:
