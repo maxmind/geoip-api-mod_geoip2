@@ -1,3 +1,4 @@
+	! Fix GEOIP_REGION and GEOIP_COUNTRY_CODE when used with the GeoIPRegion database. Both are only set if a region or country was found. Previously a empty string was assigned to both ( Boris Zentner )
 	- Add GEOIP_REGION_NAME for City and Region databases ( Boris Zentner )
 1.2.4 Jun 10th 2008
 	! mod_geoip2 has sets GEOIP_COUNTRY_CODE to -- for unknown countries when used with the country database. But for any other database ( City for example ) GEOIP_COUNTRY_CODE is unset for unknown countries. This is fixed now. Same for GEOIP_CONTINENT_CODE and GEOIP_COUNTRY_NAME. ( Boris Zentner )

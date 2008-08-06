@@ -463,20 +463,27 @@ geoip_header_parser(request_rec * r)
 		case GEOIP_REGION_EDITION_REV1:
 			giregion = GeoIP_region_by_name(cfg->gips[i], ipaddr);
 			if (giregion != NULL) {
-			  if ( giregion->country_code != NULL ) {
+			  if ( giregion->country_code[0] ) {
 			    region_name = GeoIP_region_name_by_code(giregion->country_code, giregion->region);
 			  }
 				if (cfg->GeoIPOutput & GEOIP_NOTES) {
-					apr_table_set(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
-					apr_table_set(r->notes, "GEOIP_REGION", giregion->region);
-
+					if ( giregion->country_code[0] ){
+						apr_table_set(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					}
+					if (giregion->region[0]) {
+						apr_table_set(r->notes, "GEOIP_REGION", giregion->region);
+					}
 					if ( region_name != NULL ){
 					  apr_table_set(r->notes, "GEOIP_REGION_NAME", region_name);
 					}
 				}
 				if (cfg->GeoIPOutput & GEOIP_ENV) {
-					apr_table_set(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
-					apr_table_set(r->subprocess_env, "GEOIP_REGION", giregion->region);
+					if ( giregion->country_code[0] ){
+						apr_table_set(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
+					}
+					if (giregion->region[0]) {
+					      apr_table_set(r->subprocess_env, "GEOIP_REGION", giregion->region);
+					}
 					if ( region_name != NULL ){
 					  apr_table_set(r->subprocess_env, "GEOIP_REGION_NAME", region_name);
 					}
