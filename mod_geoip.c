@@ -302,6 +302,7 @@ geoip_header_parser(request_rec * r)
 	const char     *continent_code;
 	const char     *country_code;
 	const char     *country_name;
+	const char     *region_name;
 
 	geoip_server_config_rec *cfg;
 
@@ -462,13 +463,23 @@ geoip_header_parser(request_rec * r)
 		case GEOIP_REGION_EDITION_REV1:
 			giregion = GeoIP_region_by_name(cfg->gips[i], ipaddr);
 			if (giregion != NULL) {
+			  if ( giregion->country_code != NULL ) {
+			    region_name = GeoIP_region_name_by_code(giregion->country_code, giregion->region);
+			  }
 				if (cfg->GeoIPOutput & GEOIP_NOTES) {
 					apr_table_set(r->notes, "GEOIP_COUNTRY_CODE", giregion->country_code);
 					apr_table_set(r->notes, "GEOIP_REGION", giregion->region);
+
+					if ( region_name != NULL ){
+					  apr_table_set(r->notes, "GEOIP_REGION_NAME", region_name);
+					}
 				}
 				if (cfg->GeoIPOutput & GEOIP_ENV) {
 					apr_table_set(r->subprocess_env, "GEOIP_COUNTRY_CODE", giregion->country_code);
 					apr_table_set(r->subprocess_env, "GEOIP_REGION", giregion->region);
+					if ( region_name != NULL ){
+					  apr_table_set(r->subprocess_env, "GEOIP_REGION_NAME", region_name);
+					}
 				}
 				GeoIPRegion_delete(giregion);
 			}
@@ -477,6 +488,9 @@ geoip_header_parser(request_rec * r)
 		case GEOIP_CITY_EDITION_REV1:
 			gir = GeoIP_record_by_addr(cfg->gips[i], ipaddr);
 			if (gir != NULL) {
+			        if ( gir->country_code != NULL ) {
+				  region_name = GeoIP_region_name_by_code(gir->country_code, gir->region);
+				}
 				sprintf(dmacodestr, "%d", gir->dma_code);
 				sprintf(areacodestr, "%d", gir->area_code);
 				if (cfg->GeoIPOutput & GEOIP_NOTES) {
@@ -485,6 +499,9 @@ geoip_header_parser(request_rec * r)
 					apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME", gir->country_name);
 					if (gir->region != NULL) {
 						apr_table_set(r->notes, "GEOIP_REGION", gir->region);
+						if ( region_name != NULL ){
+						  apr_table_set(r->notes, "GEOIP_REGION_NAME", region_name);
+						}
 					}
 					if (gir->city != NULL) {
 						apr_table_set(r->notes, "GEOIP_CITY", gir->city);
@@ -498,6 +515,9 @@ geoip_header_parser(request_rec * r)
 					apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME", gir->country_name);
 					if (gir->region != NULL) {
 						apr_table_set(r->subprocess_env, "GEOIP_REGION", gir->region);
+						if ( region_name != NULL ){
+						  apr_table_set(r->subprocess_env, "GEOIP_REGION_NAME", region_name);
+						}
 					}
 					if (gir->city != NULL) {
 						apr_table_set(r->subprocess_env, "GEOIP_CITY", gir->city);
