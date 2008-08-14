@@ -49,7 +49,7 @@
 
 /* geoip module
  *
- * Version 1.2.1
+ * Version 1.2.5
  *
  * This module sets an environment variable to the remote country
  * based on the requestor's IP address.  It uses the GeoIP library
