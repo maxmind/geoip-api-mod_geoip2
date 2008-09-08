@@ -96,7 +96,7 @@ static const int GEOIP_INIT    = 7;
 
 static const int GEOIP_UNKNOWN = -1;
 
-char dmacodestr[100];
+char metrocodestr[100];
 char areacodestr[100];
 char latstr[100];
 char lonstr[100];
@@ -498,7 +498,7 @@ geoip_header_parser(request_rec * r)
 			        if ( gir->country_code != NULL ) {
 				  region_name = GeoIP_region_name_by_code(gir->country_code, gir->region);
 				}
-				sprintf(dmacodestr, "%d", gir->dma_code);
+				sprintf(metrocodestr, "%d", gir->dma_code);
 				sprintf(areacodestr, "%d", gir->area_code);
 				if (cfg->GeoIPOutput & GEOIP_NOTES) {
 					apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE", gir->continent_code);
@@ -513,7 +513,8 @@ geoip_header_parser(request_rec * r)
 					if (gir->city != NULL) {
 						apr_table_set(r->notes, "GEOIP_CITY", gir->city);
 					}
-					apr_table_setn(r->notes, "GEOIP_DMA_CODE", dmacodestr);
+					apr_table_setn(r->notes, "GEOIP_DMA_CODE", metrocodestr);
+					apr_table_setn(r->notes, "GEOIP_METRO_CODE", metrocodestr);
 					apr_table_setn(r->notes, "GEOIP_AREA_CODE", areacodestr);
 				}
 				if (cfg->GeoIPOutput & GEOIP_ENV) {
@@ -529,7 +530,8 @@ geoip_header_parser(request_rec * r)
 					if (gir->city != NULL) {
 						apr_table_set(r->subprocess_env, "GEOIP_CITY", gir->city);
 					}
-					apr_table_setn(r->subprocess_env, "GEOIP_DMA_CODE", dmacodestr);
+					apr_table_setn(r->subprocess_env, "GEOIP_DMA_CODE", metrocodestr);
+					apr_table_setn(r->subprocess_env, "GEOIP_METRO_CODE", metrocodestr);
 					apr_table_setn(r->subprocess_env, "GEOIP_AREA_CODE", areacodestr);
 				}
 				sprintf(latstr, "%f", gir->latitude);

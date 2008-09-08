@@ -1,3 +1,4 @@
+	- Add GEOIP_METRO_CODE, a alias for GEOIP_DMA_CODE ( Boris Zentner )
 1.2.5 Aug 13th 2008
 	! Fix GEOIP_REGION and GEOIP_COUNTRY_CODE when used with the GeoIPRegion database. Both are only set if a region or country was found. Previously a empty string was assigned to both ( Boris Zentner )
 	- Add GEOIP_REGION_NAME for City and Region databases ( Boris Zentner )
