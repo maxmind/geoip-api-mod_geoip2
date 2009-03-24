@@ -1,3 +1,4 @@
+        - Add GEOIP_DOMAIN_EDITION support ( Boris Zentner )
 1.2.6 Sep 11th 2008
 	- GEOIP_METRO_CODE replace the depreciated GEOIP_DMA_CODE ( Boris Zentner )
 1.2.5 Aug 13th 2008

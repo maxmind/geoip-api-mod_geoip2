@@ -581,6 +581,17 @@ geoip_header_parser(request_rec * r)
 				}
 			}
 			break;
+		case GEOIP_DOMAIN_EDITION:
+			orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
+			if (orgorisp != NULL) {
+				if (cfg->GeoIPOutput & GEOIP_NOTES) {
+					apr_table_setn(r->notes, "GEOIP_DOMAIN", orgorisp);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV) {
+					apr_table_setn(r->subprocess_env, "GEOIP_DOMAIN", orgorisp);
+				}
+			}
+			break;
 		}
 	}
 
