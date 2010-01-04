@@ -350,8 +350,8 @@ geoip_header_parser(request_rec * r)
 			 * separated list, return the first IP address in the
 			 * list, which is (hopefully!) the real client IP.
 			 */
-			ipaddr = (char *) calloc(16, sizeof(char));
-			strncpy(ipaddr, ipaddr_ptr, 15);
+			ipaddr = (char *) calloc(8*4+7+1, sizeof(char));
+			strncpy(ipaddr, ipaddr_ptr, 8*4+7);
 			comma_ptr = strchr(ipaddr, ',');
 			if (comma_ptr != 0)
 				*comma_ptr = '\0';
@@ -428,6 +428,35 @@ geoip_header_parser(request_rec * r)
 			}
 			if (cfg->GeoIPOutput & GEOIP_ENV) {
 				apr_table_setn(r->subprocess_env, "GEOIP_NETSPEED", netspeedstring);
+			}
+			break;
+		case GEOIP_COUNTRY_EDITION_V6:
+			/* Get the Country ID */
+			country_id = GeoIP_country_id_by_addr_v6(cfg->gips[i], ipaddr);
+
+      if ( country_id > 0 ) {
+			  /* Lookup the Code and the Name with the ID */
+			  continent_code = GeoIP_country_continent[country_id];
+			  country_code = GeoIP_country_code[country_id];
+			  country_name = GeoIP_country_name[country_id];
+
+			  if (cfg->numGeoIPFiles == 0) {
+				  cfg->numGeoIPFiles = 0;
+			  }
+			  if (cfg->GeoIPFilenames == 0) {
+				  cfg->GeoIPFilenames = 0;
+			  }
+			  /* Set it for our user */
+			  if (cfg->GeoIPOutput & GEOIP_NOTES) {
+				  apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE_V6", continent_code);
+		  		apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE_V6", country_code);
+			  	apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME_V6", country_name);
+			  }
+			  if (cfg->GeoIPOutput & GEOIP_ENV) {
+				  apr_table_setn(r->subprocess_env, "GEOIP_CONTINENT_CODE_V6", continent_code);
+				  apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE_V6", country_code);
+				  apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME_V6", country_name);
+			  }
 			}
 			break;
 		case GEOIP_COUNTRY_EDITION:

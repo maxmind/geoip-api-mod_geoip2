@@ -116,6 +116,10 @@ Sets GEOIP_ORGANIZATION
 GeoIP Netspeed Edition:
 Sets GEOIP_NETSPEED
 
+GeoIPv6 Edition ( experimental )
+Sets GEOIP_CONTINENT_CODE_V6, GEOIP_COUNTRY_CODE_V6,
+        GEOIP_COUNTRY_NAME_V6
+
 By default it sets both the notes table and environment variable.
 For performance reasons you may want to only set the one you use, to
 do so use the "GeoIPOutput" configuration directive:
