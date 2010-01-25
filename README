@@ -168,6 +168,11 @@ GeoIPScanProxyHeaders On
 This only works if the first IP in the HTTP_X_FORWARDED_FOR list is the
 actual clientIP that you want to lookup.
 
+GeoIPUseLastXForwardedForIP On
+
+Use the last IP from the HTTP_X_FORWARDED_FOR header instead of the first one.
+GeoIPScanProxyHeaders must be enabled ( On ) otherwise
+GeoIPUseLastXForwardedForIP is ignored.
 
 ========= Server vs Directory context =========
 
