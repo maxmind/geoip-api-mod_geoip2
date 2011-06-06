@@ -531,6 +531,74 @@ geoip_header_parser(request_rec * r)
 				GeoIPRegion_delete(giregion);
 			}
 			break;
+		case GEOIP_CITY_EDITION_REV0_V6:
+		case GEOIP_CITY_EDITION_REV1_V6:
+			gir = GeoIP_record_by_addr_v6(cfg->gips[i], ipaddr);
+			if (gir != NULL) {
+			        if ( gir->country_code != NULL ) {
+				  region_name = GeoIP_region_name_by_code(gir->country_code, gir->region);
+				}
+				sprintf(metrocodestr, "%d", gir->dma_code);
+				sprintf(areacodestr, "%d", gir->area_code);
+				if (cfg->GeoIPOutput & GEOIP_NOTES) {
+					apr_table_setn(r->notes, "GEOIP_CONTINENT_CODE_V6", gir->continent_code);
+					apr_table_setn(r->notes, "GEOIP_COUNTRY_CODE_V6", gir->country_code);
+					apr_table_setn(r->notes, "GEOIP_COUNTRY_NAME_V6", gir->country_name);
+					if (gir->region != NULL) {
+						apr_table_set(r->notes, "GEOIP_REGION_V6", gir->region);
+						if ( region_name != NULL ){
+						  apr_table_set(r->notes, "GEOIP_REGION_NAME_V6", region_name);
+						}
+					}
+					if (gir->city != NULL) {
+						apr_table_set(r->notes, "GEOIP_CITY_V6", gir->city);
+					}
+					apr_table_setn(r->notes, "GEOIP_DMA_CODE_V6", metrocodestr);
+					apr_table_setn(r->notes, "GEOIP_METRO_CODE_V6", metrocodestr);
+					apr_table_setn(r->notes, "GEOIP_AREA_CODE_V6", areacodestr);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV) {
+					apr_table_setn(r->subprocess_env, "GEOIP_CONTINENT_CODE_V6", gir->continent_code);
+					apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_CODE_V6", gir->country_code);
+					apr_table_setn(r->subprocess_env, "GEOIP_COUNTRY_NAME_V6", gir->country_name);
+					if (gir->region != NULL) {
+						apr_table_set(r->subprocess_env, "GEOIP_REGION_V6", gir->region);
+						if ( region_name != NULL ){
+						  apr_table_set(r->subprocess_env, "GEOIP_REGION_NAME_V6", region_name);
+						}
+					}
+					if (gir->city != NULL) {
+						apr_table_set(r->subprocess_env, "GEOIP_CITY_V6", gir->city);
+					}
+					apr_table_setn(r->subprocess_env, "GEOIP_DMA_CODE_V6", metrocodestr);
+					apr_table_setn(r->subprocess_env, "GEOIP_METRO_CODE_V6", metrocodestr);
+					apr_table_setn(r->subprocess_env, "GEOIP_AREA_CODE_V6", areacodestr);
+				}
+				sprintf(latstr, "%f", gir->latitude);
+				sprintf(lonstr, "%f", gir->longitude);
+				if (cfg->GeoIPOutput & GEOIP_NOTES) {
+					apr_table_setn(r->notes, "GEOIP_LATITUDE_V6", latstr);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV) {
+					apr_table_setn(r->subprocess_env, "GEOIP_LATITUDE_V6", latstr);
+				}
+				if (cfg->GeoIPOutput & GEOIP_NOTES) {
+					apr_table_setn(r->notes, "GEOIP_LONGITUDE_V6", lonstr);
+				}
+				if (cfg->GeoIPOutput & GEOIP_ENV) {
+					apr_table_setn(r->subprocess_env, "GEOIP_LONGITUDE_V6", lonstr);
+				}
+				if (gir->postal_code != NULL) {
+					if (cfg->GeoIPOutput & GEOIP_NOTES) {
+						apr_table_set(r->notes, "GEOIP_POSTAL_CODE_V6", gir->postal_code);
+					}
+					if (cfg->GeoIPOutput & GEOIP_ENV) {
+						apr_table_set(r->subprocess_env, "GEOIP_POSTAL_CODE_V6", gir->postal_code);
+					}
+				}
+				GeoIPRecord_delete(gir);
+			}
+			break;
 		case GEOIP_CITY_EDITION_REV0:
 		case GEOIP_CITY_EDITION_REV1:
 			gir = GeoIP_record_by_addr(cfg->gips[i], ipaddr);
