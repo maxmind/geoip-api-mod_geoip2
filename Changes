@@ -1,3 +1,4 @@
+        - Support Aapche 2.4 ( Boris Zentner )
         - Use GeoIP_id_by_addr_v6 instead of GeoIP_country_id_by_addr_v6 ( Boris Zentner )
         - Include util_script.h to silence warning about ap_add_common_vars ( Boris Zentner )
 1.2.7 Aug 23th 2011

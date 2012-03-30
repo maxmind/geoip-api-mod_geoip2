@@ -323,7 +323,11 @@ geoip_header_parser(request_rec * r)
 		return DECLINED;
 
 	if (!cfg->scanProxyHeaders) {
-		ipaddr = r->connection->remote_ip;
+# if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER == 4
+                ipaddr = r->connection->client_ip;
+# else
+                ipaddr = r->connection->remote_ip;
+#endif
 	}
 	else {
 		ap_add_common_vars(r);
@@ -341,7 +345,11 @@ geoip_header_parser(request_rec * r)
 		}
 		if (!ipaddr_ptr) {
 			ap_log_error(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r->server, "[mod_geoip]: Error while getting ipaddr from proxy headers. Using REMOTE_ADDR.");
-			ipaddr = r->connection->remote_ip;
+# if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER == 4
+                        ipaddr = r->connection->client_ip;
+# else
+                        ipaddr = r->connection->remote_ip;
+#endif
 		}
 		else {
 			ap_log_error(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r->server, "[mod_geoip]: IPADDR_PTR: %s", ipaddr_ptr);
@@ -458,7 +466,7 @@ geoip_header_parser(request_rec * r)
 			/* Get the Country ID */
 			country_id = GeoIP_id_by_addr_v6(cfg->gips[i], ipaddr);
 
-      if ( country_id > 0 ) {
+                        if ( country_id > 0 ) {
 			  /* Lookup the Code and the Name with the ID */
 			  continent_code = GeoIP_country_continent[country_id];
 			  country_code = GeoIP_country_code[country_id];
