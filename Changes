@@ -1,3 +1,5 @@
+1.2.7 Aug 23th 2011
+        - Add support for GEOIP_NETSPEED_REV1 ( Boris Zentner )
         - Experimental support for GEOIP_COUNTRY_EDITION_V6 ( Boris Zentner )
         - Add GEOIP_DOMAIN_EDITION support ( Boris Zentner )
 1.2.6 Sep 11th 2008

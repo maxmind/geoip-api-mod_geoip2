@@ -49,7 +49,7 @@
 
 /* geoip module
  *
- * Version 1.2.6
+ * Version 1.2.7
  *
  * This module sets an environment variable to the remote country
  * based on the requestor's IP address.  It uses the GeoIP library
@@ -420,6 +420,18 @@ geoip_header_parser(request_rec * r)
 												 * in case file not
 												 * found */
 		switch (databaseType) {
+                case GEOIP_NETSPEED_EDITION_REV1:
+                  orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
+                  if (orgorisp != NULL) {
+                    if (cfg->GeoIPOutput & GEOIP_NOTES) {
+	              apr_table_setn(r->notes, "GEOIP_NETSPEED", orgorisp);
+	            }
+	            if (cfg->GeoIPOutput & GEOIP_ENV) {
+	              apr_table_setn(r->subprocess_env, "GEOIP_NETSPEED", orgorisp);
+	            }
+                  }
+                break;
+
 		case GEOIP_NETSPEED_EDITION:
 			netspeed = GeoIP_id_by_addr(cfg->gips[i], ipaddr);
 			if (netspeed == GEOIP_UNKNOWN_SPEED) {
