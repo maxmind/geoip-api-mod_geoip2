@@ -68,6 +68,7 @@
 #include "http_log.h"
 #include "ap_config.h"
 #include "apr_strings.h"
+#include "util_script.h"
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 
