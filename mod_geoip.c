@@ -456,7 +456,7 @@ geoip_header_parser(request_rec * r)
 			break;
 		case GEOIP_COUNTRY_EDITION_V6:
 			/* Get the Country ID */
-			country_id = GeoIP_country_id_by_addr_v6(cfg->gips[i], ipaddr);
+			country_id = GeoIP_id_by_addr_v6(cfg->gips[i], ipaddr);
 
       if ( country_id > 0 ) {
 			  /* Lookup the Code and the Name with the ID */
