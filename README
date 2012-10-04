@@ -1,267 +1,558 @@
-				mod_geoip2 1.2.7
-				----------------
+mod_geoip2 1.2.7
+----------------
 
-======== OVERVIEW =========
+The mod_geoip2 module embeds GeoIP database lookups into the Apache web
+server. It is only capable of looking up the IP of a client that
+connects to the web server, as opposed to looking up arbitrary
+addresses.
 
-mod_geoip2 is an Apache 2.x module for finding the country and city
-that a web request originated from.  It uses the GeoIP library and
-database to perform the lookup.  It is free software, licensed under
-the Apache license.  It requires the C API, version 1.4.3 and above, see:
-http://www.maxmind.com/app/c
+Version
+-------
 
-For the Apache 1.3 mod_geoip module, see:
-http://www.maxmind.com/download/geoip/api/mod_geoip/
+The latest version of mod_geoip2 is version 1.2.7.
 
-======== USAGE ============
+Installation
+------------
 
-To use, see the instructions in INSTALL on how to install the module,
-then make sure that
+You can [download
+mod_geoip2](http://www.maxmind.com/download/geoip/api/mod_geoip2/) from
+our download server. See the `INSTALL` file in the tarball for
+installation details.
 
-  GeoIPEnable On
+Overview
+--------
 
-is set in your Apache configuration file.  This will call the GeoIP Country
-database from its default location (e.g. /usr/local/share/GeoIP/GeoIP.dat)
+The mod_geoip2 module uses the libGeoIP library to look up geolocation
+information for a client as part of the http request process. This
+module is free software, and is licensed under the [Apache
+license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-If you want to specify the a non-default location for the database file(s),
-or what to use other databases besides GeoIP Country, or to pass options,
-use:
+To compile and install this module, you must first install [libGeoIP
+1.4.3](http://www.maxmind.com/download/geoip/api/c/) or newer.
 
-  GeoIPDBFile /path/to/GeoIP.dat GeoIPFlag
+The mod_geoip2 module takes effect either during request header parsing
+phase or the post read request phase, depending on whether it is
+configured for server-wide use or for a specific location/directory.
 
-For example
+When enabled, the module looks at the incoming IP address and sets some
+variables which provide geolocation information for that IP. The
+variables it set depend on the specific GeoIP database being used
+(Country, City, ISP, etc.). These variables can be set in either the
+request notes table, the environment or both depending on the server
+configuration.
 
-GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
-GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat Standard
+Configuration
+-------------
 
-The possible values for GeoIPFlag are:
+GeoIP configuration directives can be placed in either an `.htaccess`
+file or in the main server config. After installing the module, make
+sure that
 
-The default GeoIPFlag is Standard, which does not perform
-any memory caching (it is the most memory efficient).  To turn
-on memory caching (warning can be memory intensive since
-it is used across all Apache children) use:
+    GeoIPEnable On
 
-  GeoIPDBFile /path/to/GeoIP.dat MemoryCache
+is set in your Apache configuration file. This will call the GeoIP
+Country database from its default location (e.g.
+/usr/local/share/GeoIP/GeoIP.dat)
 
-We recommend that you use Memory Caching only for the smaller
-database files, such as GeoIP Country and GeoIP ISP.
+If you want to specify options, for example to use a different database
+or to pass caching options, you can use the `GeoIPDBFile` directive:
 
-Another MemoryCache option is MMapCache.
+### File and Caching Directives
 
-If you would like to enable checking for GeoIP updates, use
+    GeoIPDBFile /path/to/GeoIP.dat [GeoIPFlag]
 
-  GeoIPDBFile /path/to/GeoIP.dat CheckCache
+For example:
 
-Before making a call to the database, geoip will check the GeoIP.dat file
-to see if there is an updated database before making the call.  This way
-you shouldn't have to restart the Apache server after updating the GeoIP
-data files.
+    GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+    GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat Standard
 
-If you would like to turn on partial memory caching, use:
+The default GeoIPFlag value is Standard, which does not perform any
+caching, but uses the least memory. To turn on memory caching use:
 
-  GeoIPDBFile /path/to/GeoIP.dat IndexCache
+    GeoIPDBFile /path/to/GeoIP.dat MemoryCache
 
-The IndexCache option caches the most frequently accessed index portion of
-the database, resulting in faster lookups than StandardCache, but less
-memory usage than MemoryCache - useful for larger databases such as
-GeoIP Organization and GeoIP City.  Note, for GeoIP Country, Region
-and Netspeed databases, IndexCache is equivalent to MemoryCache.
+The memory cache option can use a large amount of memory. We recommend
+that you use Memory Caching only for the smaller database files, such as
+GeoIP Country and GeoIP ISP.
 
-Currently, multiple GeoIPFlags options can not be combined.  This
-can be fixed by changing geoip_set_filename to ITERATE2, patches welcome.
+Another MemoryCache option is MMapCache, which uses the the `mmap`
+system call to map the database file into memory.
 
-You may change the output charset fom latin1 ( iso-8859-1 ) to utf8 with:
+If you would like the API to check to see if your local GeoIP files have
+been updated, set the `CheckCache` flag:
 
-  GeoIPEnableUTF8 On
+    GeoIPDBFile /path/to/GeoIP.dat CheckCache
 
+Before making a call to the database, geoip will check the GeoIP.dat
+file to see if it has changed. If it has it, then it will reload the
+file. With this option, you do not have to restart Apache when you
+update your GeoIP databases.
 
-Output variables set:
+If you would like to turn on partial memory caching, use the
+`IndexCache` flag:
 
-GEOIP_ADDR is the address used to calculate the geoip information. Either the ipaddress you came 
-from, or if you use GeoIPScanProxyHeaders On,  the first defined environment 
-variable HTTP_CLIENT_IP, HTTP_X_FORWARDED_FOR, the http header X-Forwarded-For or the environment 
-variable HTTP_REMOTE_ADDR.
+    GeoIPDBFile /path/to/GeoIP.dat IndexCache
 
-GEOIP_ADDR is always exported, when mod_geoip is used.
+The IndexCache option caches the most frequently accessed index portion
+of the database, resulting in faster lookups than StandardCache, but
+less memory usage than MemoryCache. This is especially useful for larger
+databases such as GeoIP Organization and GeoIP City. For the GeoIP
+Country, Region and Netspeed databases, setting the IndexCache option
+just causes the C API to use the MemoryCache.
 
+Currently, multiple GeoIPFlags options can not be combined.
 
-GeoIP Country Edition:
-You can retrieve the ISO 3166 Country code from the Apache notes table
-under the "GEOIP_COUNTRY_CODE" key, or from the environment variable
-"GEOIP_COUNTRY_CODE". 
-You can also retrieve the Continent code from the "GEOIP_CONTINENT_CODE" note or environment variable.
-Possible continent codes are AF, AS, EU, NA, OC, SA for Africa, Asia, Europe, North America, Oceania
-and South America.
-It also sets the GEOIP_COUNTRY_NAME note and
-environment variable.  If GeoIP does not determine the country
-for an IP address (for example if the IP address is missing
-or is a private IP address), then it will not set the
-GEOIP_COUNTRY_CODE and GEOIP_COUNTRY_NAME variables.
+### Enabling UTF-8 Output
 
-GeoIP Region Edition:
-Sets GEOIP_COUNTRY_CODE, GEOIP_REGION_NAME and GEOIP_REGION
+You may change the output charset from ISO-8859-1 (Latin-1) to UTF-8 with
+this directive:
 
-GeoIP City Edition:
-Sets GEOIP_CONTINENT_CODE, GEOIP_COUNTRY_CODE, GEOIP_COUNTRY_NAME, GEOIP_REGION, 
-	GEOIP_REGION_NAME, GEOIP_CITY, GEOIP_METRO_CODE,
-        GEOIP_AREA_CODE, GEOIP_LATITUDE, GEOIP_LONGITUDE
-	and GEOIP_POSTAL_CODE
+    GeoIPEnableUTF8 On
 
-GeoIP ISP Edition:
-Sets GEOIP_ISP
-(Note to ISP edition subscribers, requires new format)
+By default mod_geoip2 sets variables in both the notes table and
+environment. For performance reasons you may want to set only the one
+you use. To do so, use the `GeoIPOutput` configuration directive:
 
-GeoIP Organization Edition:
-Sets GEOIP_ORGANIZATION
+### Output Variable Location
 
-GeoIP Netspeed Edition:
-Sets GEOIP_NETSPEED
+    GeoIPOutput Notes   # Sets the Apache notes table only
+    GeoIPOutput Env     # Sets environment variables only
+    GeoIPOutput All     # Sets both (default behaviour)
 
-GeoIPv6 Edition ( experimental )
-Sets GEOIP_CONTINENT_CODE_V6, GEOIP_COUNTRY_CODE_V6,
-        GEOIP_COUNTRY_NAME_V6
+### Proxy-Related Directives
 
-By default it sets both the notes table and environment variable.
-For performance reasons you may want to only set the one you use, to
-do so use the "GeoIPOutput" configuration directive:
+By default, this module will simply look at the IP address of the
+client. However, if the client is using a proxy, this will be the
+address of the proxy. You can use the `GeoIPScanProxyHeaders` directive
+to look at proxy-related headers.
 
-  GeoIPOutput Notes   # Sets Apache notes table only
-  GeoIPOutput Env     # Sets Environmental Variable only
-  GeoIPOutput All     # Sets both (current default behaviour)
+    GeoIPScanProxyHeaders On
 
-========= redirection with mod_geoip and mod_rewrite ========
+When this is set, the module will look at several other sources for the
+IP address, in this order:
 
-Below is an example of how to do redirection with mod_geoip and
-mod_rewrite:
+-   The `HTTP_CLIENT_IP` environment variable (set by Apache).
+-   The `HTTP_X_FORWARDED_FOR` environment variable (set by Apache).
+-   The `X-Forwarded-For` for header (set by a proxy).
+-   The `HTTP_REMOTE_ADDR` environment variable (set by Apache).
 
-GeoIPEnable On
-GeoIPDBFile /path/to/GeoIP.dat
+This module will use the first IP address it finds in one of these
+locations *instead* of the IP address the client connected from.
 
-RewriteEngine on
-RewriteCond %{ENV:GEOIP_COUNTRY_CODE} ^CA$
-RewriteRule \.(gif|jpg|png|css)$ - [L] # don't redirect images and stylesheets
-RewriteRule ^(.*)$ http://www.canada.com [L] # redirect everything else
+Some of these variables may contain a comma-separate list of IP
+addresses (when a client goes through multiple proxies). In this case,
+the default behavior is to use the first IP address. You can set the
+`GeoIPUseLastXForwardedForIP` directive to use the last address instead:
 
-======== Blocking unwanted countries ==========
+    GeoIPUseLastXForwardedForIP On
 
-# This blocks traffic from China and Russia
+Output Variables
+----------------
 
-GeoIPEnable On
-GeoIPDBFile /path/to/GeoIP.dat
+As noted above, these variables can be set in either the Apache request
+notes table, the environment, or both. The specific variables which are
+set depend on the database you are using.
 
-SetEnvIf GEOIP_COUNTRY_CODE CN BlockCountry
-SetEnvIf GEOIP_COUNTRY_CODE RU BlockCountry
-# ... place more countries here
+### GeoIP Country Edition Output Variables
 
-Deny from env=BlockCountry
+Name
 
-# Optional - use if you want to allow a specific IP address from the country you denied
-# See http://httpd.apache.org/docs/1.3/mod/mod_access.html for more details
-# Allow from 10.1.2.3
+Description
 
-========= proxies =========
+GEOIP_ADDR
 
-If you have a backend server in front of a proxy server, and the client IP is in
-the HTTP_X_FORWARDED_FOR variable, then use
+The address used to calculate the GeoIP output.
 
-GeoIPScanProxyHeaders On
+GEOIP_CONTINENT_CODE
 
-This only works if the first IP in the HTTP_X_FORWARDED_FOR list is the
-actual clientIP that you want to lookup.
+A two-character code for the continent associated with the IP address.
+The possible codes are:
 
-GeoIPUseLastXForwardedForIP On
+-   **AF** - Africa
+-   **AS** - Asia
+-   **EU** - Europe
+-   **NA** - North America
+-   **OC** - Oceania
+-   **SA** - South America
 
-Use the last IP from the HTTP_X_FORWARDED_FOR header instead of the first one.
-GeoIPScanProxyHeaders must be enabled ( On ) otherwise
-GeoIPUseLastXForwardedForIP is ignored.
+GEOIP_COUNTRY_CODE
 
-========= Server vs Directory context =========
+A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
+country code for the country associated with the IP address. In addition
+to the standard codes, we may also return one of the following:
 
-All directives expect GeoIPEnable are server config only.
-ie: you type it only once per server config. Otherwise the latest wins.
+-   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
+-   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
+-   **EU** - an IP in a block used by multiple
+    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **AP** - an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
 
-<IfModule mod_geoip.c>
-  GeoIPEnable Off
-  GeoIPEnableUTF8 On
-  GeoIPOutput Env
-  GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
-  GeoIPDBFile /usr/local/share/GeoIP/GeoIPCity.dat MemoryCache
-  GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat MemoryCache
-</IfModule>
+The **US** country code is returned for IP addresses associated with
+overseas US military bases.
+
+GEOIP_COUNTRY_NAME
+
+The country name associated with the IP address.
+
+### GeoIP Region Edition Output Variables
+
+Name
+
+Description
+
+GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+GEOIP_COUNTRY_CODE
+
+A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
+country code for the country associated with the IP address. In addition
+to the standard codes, we may also return one of the following:
+
+-   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
+-   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
+-   **EU** - an IP in a block used by multiple
+    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **AP** - an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+
+The **US** country code is returned for IP addresses associated with
+overseas US military bases.
+
+GEOIP_REGION_NAME
+
+The region name associated with the IP address.
+
+GEOIP_REGION
+
+A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
+[FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
+state/region associated with the IP address.
+
+For the US and Canada, we return an ISO-3166-2 code. In addition to the
+standard ISO codes, we may also return one of the following:
+
+-   **AA** - Armed Forces America
+-   **AE** - Armed Forces Europe
+-   **AP** - Armed Forces Pacific
+
+We return a FIPS code for all other countries.
+
+We provide a [CSV file which maps our region codes to region
+names](http://dev.maxmind.com/static/maxmind-region-codes.csv). The columns are ISO country
+code, region code (FIPS or ISO), and the region name.
+
+### GeoIP City Edition Output Variables
+
+Name
+
+Description
+
+GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+GEOIP_CONTINENT_CODE
+
+A two-character code for the continent associated with the IP address.
+The possible codes are:
+
+-   **AF** - Africa
+-   **AS** - Asia
+-   **EU** - Europe
+-   **NA** - North America
+-   **OC** - Oceania
+-   **SA** - South America
+
+GEOIP_COUNTRY_CODE
+
+A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
+country code for the country associated with the IP address. In addition
+to the standard codes, we may also return one of the following:
+
+-   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
+-   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
+-   **EU** - an IP in a block used by multiple
+    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **AP** - an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+
+The **US** country code is returned for IP addresses associated with
+overseas US military bases.
+
+GEOIP_REGION
+
+A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
+[FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
+state/region associated with the IP address.
+
+For the US and Canada, we return an ISO-3166-2 code. In addition to the
+standard ISO codes, we may also return one of the following:
+
+-   **AA** - Armed Forces America
+-   **AE** - Armed Forces Europe
+-   **AP** - Armed Forces Pacific
+
+We return a FIPS code for all other countries.
+
+We provide a [CSV file which maps our region codes to region
+names](http://dev.maxmind.com/static/maxmind-region-codes.csv). The columns are ISO country
+code, region code (FIPS or ISO), and the region name.
+
+GEOIP_REGION_NAME
+
+The region name associated with the IP address.
+
+GEOIP_CITY
+
+The city or town name associated with the IP address. See our [list of
+cities](http://www.maxmind.com/GeoIPCity-534-Location.csv) to see all
+the possible return values. This list is updated on a regular basis.
+
+GEOIP_METRO_CODE
+
+The metro code associated with the IP address. These are only available
+for IP addresses in the US. MaxMind returns the [same metro codes as the
+Google AdWords
+API](https://developers.google.com/adwords/api/docs/appendix/metrocodes).
+
+GEOIP_AREA_CODE
+
+The telephone area code associated with the IP address. These are only
+available for IP addresses in the US.
+
+GEOIP_LATITUDE
+
+The latitude associated with the IP address.
+
+GEOIP_LONGITUDE
+
+The longitude associated with the IP address.
+
+GEOIP_POSTAL_CODE
+
+The postal code associated with the IP address. These are available for
+some IP addresses in the US, Canada, Germany, and United Kingdom.
+
+### GeoIP ISP Edition Output Variables
+
+  Name          Description
+  ------------- -----------------------------------------------------
+  GEOIP_ADDR   The address used to calculate the GeoIP output.
+  GEOIP_ISP    The name of the ISP associated with the IP address.
+
+### GeoIP Organization Edition Output Variables
+
+  Name                  Description
+  --------------------- --------------------------------------------------------------
+  GEOIP_ADDR           The address used to calculate the GeoIP output.
+  GEOIP_ORGANIZATION   The name of the organization associated with the IP address.
+
+### GeoIP Netspeed Edition Output Variables
+
+Name
+
+Description
+
+GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+GEOIP_NETSPEED
+
+The network speed associated with the IP address. This can be one of the
+following values:
+
+-   **Dialup**
+-   **Cable/DSL**
+-   **Corporate**
+-   **Cellular**
+
+### GeoIPv6 Edition (experimental) Output Variables
+
+Name
+
+Description
+
+GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+GEOIP_CONTINENT_CODE_V6
+
+A two-character code for the continent associated with the IP address.
+The possible codes are:
+
+-   **AF** - Africa
+-   **AS** - Asia
+-   **EU** - Europe
+-   **NA** - North America
+-   **OC** - Oceania
+-   **SA** - South America
+
+GEOIP_COUNTRY_CODE_V6
+
+A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
+country code for the country associated with the IP address. In addition
+to the standard codes, we may also return one of the following:
+
+-   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
+-   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
+-   **EU** - an IP in a block used by multiple
+    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **AP** - an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+
+The **US** country code is returned for IP addresses associated with
+overseas US military bases.
+
+GEOIP_COUNTRY_NAME_V6
+
+The country name associated with the IP address.
+
+Examples
+--------
+
+Here are some examples of how you can use mod_geoip2.
+
+### Redirecting a client based on country
+
+This example show you how to redirect a client based on the country code
+that GeoIP sets.
+
+    GeoIPEnable On
+    GeoIPDBFile /path/to/GeoIP.dat
+
+    # Redirect one country
+    RewriteEngine on
+    RewriteCond %{ENV:GEOIP_COUNTRY_CODE} ^CA$
+    RewriteRule ^(.*)$ http://www.canada.com$1 [R,L]
+
+    # Redirect multiple countries to a single page
+    RewriteEngine on
+    RewriteCond %{ENV:GEOIP_COUNTRY_CODE} ^(CA|US|MX)$
+    RewriteRule ^(.*)$ http://www.northamerica.com$1 [R,L]
+
+### Blocking a client based on country
+
+This example show you how to block clients based on the country code
+that GeoIP sets.
+
+    GeoIPEnable On
+    GeoIPDBFile /path/to/GeoIP.dat
+
+    SetEnvIf GEOIP_COUNTRY_CODE CN BlockCountry
+    SetEnvIf GEOIP_COUNTRY_CODE RU BlockCountry
+    # ... place more countries here
+
+    Deny from env=BlockCountry
+
+### Allowing clients based on country
+
+This example show you how to allow only clients from specific countries.
+
+    GeoIPEnable On
+    GeoIPDBFile /path/to/GeoIP.dat
+
+    SetEnvIf GEOIP_COUNTRY_CODE US AllowCountry
+    SetEnvIf GEOIP_COUNTRY_CODE CA AllowCountry
+    SetEnvIf GEOIP_COUNTRY_CODE MX AllowCountry
+    # ... place more countries here
+
+    Deny from all
+    Allow from env=AllowCountry
+
+### Server vs Directory context
+
+All directives except GeoIPEnable are server config only, i.e., you type
+it only once per server config. Otherwise the latest wins.
+
+    <IfModule mod_geoip.c>
+      GeoIPEnable Off
+      GeoIPEnableUTF8 On
+      GeoIPOutput Env
+      GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+      GeoIPDBFile /usr/local/share/GeoIP/GeoIPCity.dat MemoryCache
+      GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat MemoryCache
+    </IfModule>
 
 GeoIPEnable is useful in server or directory context. For example:
 
-##
-## Example 1 GeoIP is only avail for creation parts of our server
-##
+GeoIP is only available for a specific location:
 
-<IfModule mod_geoip.c>
-  GeoIPEnable Off
-  GeoIPEnableUTF8 On
-  GeoIPOutput Env
-  GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
-</IfModule>
+    <IfModule mod_geoip.c>
+      GeoIPEnable Off
+      GeoIPEnableUTF8 On
+      GeoIPOutput Env
+      GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+    </IfModule>
 
-# GeoIP information is avail only inside /xxx
-<Location /xxx>
-  GeoIPEnable On
-</Location>
+    # GeoIP information is avail only inside /xxx
+    <Location /geoip-enabled>
+      GeoIPEnable On
+      ...
+    </Location>
 
+    <Location /other>
+      ...
+    </Location>
 
+GeoIP is available for all locations:
 
-##
-## Example 2 GeoIP is avail for every request
-##
+    <IfModule mod_geoip.c>
+      GeoIPEnable On
+      GeoIPEnableUTF8 On
+      GeoIPOutput Env
+      GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+    </IfModule>
 
-<IfModule mod_geoip.c>
-  GeoIPEnable On
-  GeoIPEnableUTF8 On
-  GeoIPOutput Env
-  GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
-</IfModule>
+    # This doesn't work, because it's already been enabled in the server-wide
+    # config!
+    <Location /geoip-enabled>
+      GeoIPEnable On
+    </Location>
 
-<Location /xxx>
-  GeoIPEnable On
-</Location>
+    <Location /geoip-disabled>
+      GeoIPEnable Off
+    </Location>
 
-## geoip information is also avail inside /yyy since it is enabled serverwide!!!
-<Location /yyy>
-  GeoIPEnable Off
-</Location>
+Memory Usage
+------------
 
-======== preformance -- getting fast =======
+Starting at mod_geoip2 version 1.2.1, all Apache child processes share
+the same database when you set the MemoryCache or MMapCache flag.
 
-To get really fast, add the MemoryCache option to the GeoIPDBFile directive or
-the MMapCache with very similar results.
+Memory usage is about the same as the database file size, no matter how
+many child processes Apache spawns. The only thing to remember is ask
+Apache to update if your database changes. Use the graceful restart
+option to do so without stopping Apache.
 
-========= saving memory =========
+Performance
+-----------
 
-Every apache child share the same database over all childs.
-From mod_geoip version 1.2.1 on. If you choice to use MemoryCache or MMapCache.
-Doing so reduce the child database loading time to zero and the memoryusage
-is about the database filesize. No matter how many childs apache spawns. The
-only thing to remember is ask apache to update, if your the database change. 
-Use httpd -k graceful to do so without stopping apache.
+For improved performance, you may want to enable mod_geoip only for
+specific HTML pages. If you want to use the mod_geoip module site-wide,
+you may still be able to only use it for HTML pages and not images. To
+restrict the pages where mod_geoip2 is used, place the `GeoIPEnable On`
+directive inside a , or directive, see:
+[httpd.apache.org/docs/2.0/sections.html](http://httpd.apache.org/docs/2.0/sections.html)
 
-========= performance =====
+Troubleshooting
+---------------
 
-For improved performance, you may want to only enable mod_geoip
-for specific HTML pages.  If you want to use the mod_geoip module
-site-wide, you may still be able to only use it for HTML pages
-and not images.  To restrict the pages where mod_geoip is used,
-place the GeoIPEnable on and associated directives inside a
-<Location>, <Files> or <FilesMatch> directive, see:
-http://httpd.apache.org/docs/2.0/sections.html
+If the module is not working, make sure that the httpd user (e.g.
+nobody) has read access to the GeoIP database file(s) you are using.
 
-========= troubleshooting =======
-
-If the module is not working, make sure that the httpd user (e.g. nobody)
-has read access to the GeoIP.dat file, by running the chown or chmod command.
-
-If the GeoIP variables do not show up, please make sure that the client
+If the GeoIP variables do not show up please make sure that the client
 IP address is not on a private network such as 10.0.0.0/8, 172.16.0.0/12
-or 192.168.0.0/16.  GeoIP only reports the country of external IP addresses.
+or 192.168.0.0/16. GeoIP can only look up public IP addresses.
 
-========= Copyright =========
+----
 
-Copyright 2007 MaxMind LLC
-support@maxmind.com
+This file was generated by running
+
+  pandoc --from html --to markdown
+
+Using http://dev.maxmind.com/geoip/mod_geoip2 as the HTML input.
