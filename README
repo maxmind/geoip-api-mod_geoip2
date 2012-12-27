@@ -146,6 +146,12 @@ the default behavior is to use the first IP address. You can set the
 
     GeoIPUseLastXForwardedForIP On
 
+Or use `GeoIPUseFirstNonPrivateXForwardedForIP` to use the first
+non private IP Address.
+
+    GeoIPUseFirstNonPrivateXForwardedForIP On
+
+
 Output Variables
 ----------------
 
