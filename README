@@ -1,4 +1,4 @@
-mod_geoip2 1.2.7
+mod_geoip2 1.2.8
 ----------------
 
 The mod_geoip2 module embeds GeoIP database lookups into the Apache web
@@ -9,7 +9,7 @@ addresses.
 Version
 -------
 
-The latest version of mod_geoip2 is version 1.2.7.
+The latest version of mod_geoip2 is version 1.2.8.
 
 Installation
 ------------
