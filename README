@@ -84,7 +84,7 @@ been updated, set the `CheckCache` flag:
     GeoIPDBFile /path/to/GeoIP.dat CheckCache
 
 Before making a call to the database, geoip will check the GeoIP.dat
-file to see if it has changed. If it has it, then it will reload the
+file to see if it has changed. If it has, then it will reload the
 file. With this option, you do not have to restart Apache when you
 update your GeoIP databases.
 
