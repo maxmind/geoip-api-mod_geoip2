@@ -353,7 +353,7 @@ static int geoip_per_dir(request_rec * r)
 char *_get_client_ip(request_rec * r)
 {
 # if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER == 4
-    return r->connection->client_ip;
+    return r->useragent_ip;
 # else
     return r->connection->remote_ip;
 #endif
