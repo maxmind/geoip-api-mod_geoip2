@@ -151,6 +151,9 @@ non private IP Address.
 
     GeoIPUseFirstNonPrivateXForwardedForIP On
 
+Apache 2.4 users using mod_remoteip to pick the IP address of the user should
+disable GeoIPScanProxyHeaders. Mod_geoip2 will use whatever mod_remoteip
+provides.
 
 Output Variables
 ----------------
