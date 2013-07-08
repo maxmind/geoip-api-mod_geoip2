@@ -1,3 +1,5 @@
+        - Add support to configure a own forward ip header field (Sascha Kuehndel)
+	- Add the ability to forward the result fields to a backend server/proxy, via request header (Sascha Kuehndel)
 1.2.8 Jan 8th 2013
 	- Add GeoIPUseFirstNonPrivateXForwardedForIP option ( Boris Zentner )
 	- Support Apache 2.4 ( Boris Zentner )
