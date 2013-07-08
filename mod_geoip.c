@@ -360,7 +360,7 @@ char *_get_client_ip(request_rec * r)
 }
 
 static void set_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
-                             const char *key, const chat * value)
+                             const char *key, const char *value)
 {
     if (value) {
         if (cfg->GeoIPOutput & GEOIP_NOTES) {
