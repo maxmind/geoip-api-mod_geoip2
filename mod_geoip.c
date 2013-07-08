@@ -857,8 +857,8 @@ static const char *set_geoip_output_mode(cmd_parms * cmd, void *dummy,
                                          const char *arg)
 {
     geoip_server_config_rec *cfg =
-        (geoip_server_config_rec *) ap_get_module_config(cmd->
-                                                         server->module_config,
+        (geoip_server_config_rec *) ap_get_module_config(cmd->server->
+                                                         module_config,
                                                          &geoip_module);
 
     if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
@@ -869,6 +869,8 @@ static const char *set_geoip_output_mode(cmd_parms * cmd, void *dummy,
         cfg->GeoIPOutput |= GEOIP_NOTES;
     } else if (!strcmp(arg, "Env")) {
         cfg->GeoIPOutput |= GEOIP_ENV;
+    } else if (!strcmp(arg, "Request")) {
+        cfg->GeoIPOutput |= GEOIP_REQUEST;
     } else if (!strcmp(arg, "All")) {
         cfg->GeoIPOutput |= GEOIP_ALL;
     }
