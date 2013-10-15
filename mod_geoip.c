@@ -608,10 +608,13 @@ static int geoip_header_parser(request_rec * r)
                         setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE", GeoIP_continent_code[country_id]);
                     }
                     if (giregion->region[0]) {
-                        apr_table_set(r->notes,
-                                      "GEOIP_REGION", giregion->region);
+setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                     }
                     setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
+                    if (region_name != NULL) {
+                        apr_table_set(r->notes,
+                                      "GEOIP_REGION_NAME", region_name);
+                    }
                 GeoIPRegion_delete(giregion);
             }
             break;
@@ -831,8 +834,8 @@ static const char *set_geoip_output_mode(cmd_parms * cmd, void *dummy,
                                     const char *arg)
 {
     geoip_server_config_rec *cfg =
-        (geoip_server_config_rec *) ap_get_module_config(cmd->
-                                                         server->module_config,
+        (geoip_server_config_rec *) ap_get_module_config(cmd->server->
+                                                         module_config,
                                                          &geoip_module);
 
     if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
