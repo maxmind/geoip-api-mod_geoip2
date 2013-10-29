@@ -373,7 +373,7 @@ static void set_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
 }
 
 static void setn_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
-                             const char *key, const char *value)
+                              const char *key, const char *value)
 {
     if (value) {
         if (cfg->GeoIPOutput & GEOIP_NOTES) {
@@ -564,9 +564,11 @@ static int geoip_header_parser(request_rec * r)
                 }
                 /* Set it for our user */
                 setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE_V6",
-                                 continent_code);
-                setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE_V6", country_code);
-                setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME_V6", country_name);
+                                  continent_code);
+                setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE_V6",
+                                  country_code);
+                setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME_V6",
+                                  country_name);
             }
             break;
         case GEOIP_COUNTRY_EDITION:
@@ -587,7 +589,7 @@ static int geoip_header_parser(request_rec * r)
                 }
                 /* Set it for our user */
                 setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE",
-                                 continent_code);
+                                  continent_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE", country_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME", country_name);
             }
@@ -598,23 +600,25 @@ static int geoip_header_parser(request_rec * r)
             giregion = GeoIP_region_by_name(cfg->gips[i], ipaddr);
             if (giregion != NULL) {
                 region_name = NULL;
-                if (giregion-> country_code[0]) {
+                if (giregion->country_code[0]) {
                     region_name =
                         GeoIP_region_name_by_code
                         (giregion->country_code, giregion->region);
-			setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE", giregion->country_code);
-			country_id = GeoIP_id_by_code(giregion->country_code);
-                        setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME", GeoIP_country_name[country_id]);
-                        setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE", GeoIP_continent_code[country_id]);
-                    }
-                    if (giregion->region[0]) {
-setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
-                    }
-                    setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
-                    if (region_name != NULL) {
-                        apr_table_set(r->notes,
-                                      "GEOIP_REGION_NAME", region_name);
-                    }
+                    setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE",
+                                      giregion->country_code);
+                    country_id = GeoIP_id_by_code(giregion->country_code);
+                    setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME",
+                                      GeoIP_country_name[country_id]);
+                    setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE",
+                                      GeoIP_continent_code[country_id]);
+                }
+                if (giregion->region[0]) {
+                    setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
+                }
+                setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
+                if (region_name != NULL) {
+                    apr_table_set(r->notes, "GEOIP_REGION_NAME", region_name);
+                }
                 GeoIPRegion_delete(giregion);
             }
             break;
@@ -630,11 +634,11 @@ setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                 sprintf(metrocodestr, "%d", gir->dma_code);
                 sprintf(areacodestr, "%d", gir->area_code);
                 setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE_V6",
-                                 gir->continent_code);
+                                  gir->continent_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE_V6",
-                                 gir->country_code);
+                                  gir->country_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME_V6",
-                                 gir->country_name);
+                                  gir->country_name);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_V6", gir->region);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_NAME_V6", region_name);
                 setn_geoip_output(cfg, r, "GEOIP_CITY_V6", gir->city);
@@ -647,9 +651,9 @@ setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                 setn_geoip_output(cfg, r, "GEOIP_LONGITUDE_V6", lonstr);
 
                 setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE_V6",
-                                 gir->postal_code);
+                                  gir->postal_code);
                 setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE_V6",
-                                 gir->postal_code);
+                                  gir->postal_code);
                 GeoIPRecord_delete(gir);
             }
 
@@ -666,11 +670,11 @@ setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                 sprintf(metrocodestr, "%d", gir->dma_code);
                 sprintf(areacodestr, "%d", gir->area_code);
                 setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE",
-                                 gir->continent_code);
+                                  gir->continent_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE",
-                                 gir->country_code);
+                                  gir->country_code);
                 setn_geoip_output(cfg, r "GEOIP_COUNTRY_NAME",
-                                 gir->country_name);
+                                  gir->country_name);
                 setn_geoip_output(cfg, r, "GEOIP_REGION", gir->region);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
                 setn_geoip_output(cfg, r, "GEOIP_CITY", gir->city);
@@ -681,7 +685,8 @@ setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                 sprintf(lonstr, "%f", gir->longitude);
                 setn_geoip_output(cfg, r, "GEOIP_LATITUDE", latstr);
                 setn_geoip_output(cfg, r, "GEOIP_LONGITUDE", lonstr);
-                setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE", gir->postal_code);
+                setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE",
+                                  gir->postal_code);
                 GeoIPRecord_delete(gir);
             }
 
@@ -831,11 +836,11 @@ static const char *set_geoip_filename(cmd_parms * cmd, void *dummy,
 }
 
 static const char *set_geoip_output_mode(cmd_parms * cmd, void *dummy,
-                                    const char *arg)
+                                         const char *arg)
 {
     geoip_server_config_rec *cfg =
-        (geoip_server_config_rec *) ap_get_module_config(cmd->server->
-                                                         module_config,
+        (geoip_server_config_rec *) ap_get_module_config(cmd->
+                                                         server->module_config,
                                                          &geoip_module);
 
     if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
