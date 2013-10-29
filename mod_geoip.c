@@ -642,13 +642,13 @@ static int geoip_header_parser(request_rec * r)
                 setn_geoip_output(cfg, r, "GEOIP_REGION_V6", gir->region);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_NAME_V6", region_name);
                 setn_geoip_output(cfg, r, "GEOIP_CITY_V6", gir->city);
-                setn_geoip_output(cfg, r, "GEOIP_DMA_CODE_V6", metrocodestr);
-                setn_geoip_output(cfg, r, "GEOIP_METRO_CODE_V6", metrocodestr);
-                setn_geoip_output(cfg, r, "GEOIP_AREA_CODE_V6", areacodestr);
+                set_geoip_output(cfg, r, "GEOIP_DMA_CODE_V6", metrocodestr);
+                set_geoip_output(cfg, r, "GEOIP_METRO_CODE_V6", metrocodestr);
+                set_geoip_output(cfg, r, "GEOIP_AREA_CODE_V6", areacodestr);
                 sprintf(latstr, "%f", gir->latitude);
                 sprintf(lonstr, "%f", gir->longitude);
-                setn_geoip_output(cfg, r, "GEOIP_LATITUDE_V6", latstr);
-                setn_geoip_output(cfg, r, "GEOIP_LONGITUDE_V6", lonstr);
+                set_geoip_output(cfg, r, "GEOIP_LATITUDE_V6", latstr);
+                set_geoip_output(cfg, r, "GEOIP_LONGITUDE_V6", lonstr);
 
                 setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE_V6",
                                   gir->postal_code);
@@ -678,13 +678,13 @@ static int geoip_header_parser(request_rec * r)
                 setn_geoip_output(cfg, r, "GEOIP_REGION", gir->region);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
                 setn_geoip_output(cfg, r, "GEOIP_CITY", gir->city);
-                setn_geoip_output(cfg, r, "GEOIP_DMA_CODE", metrocodestr);
-                setn_geoip_output(cfg, r, "GEOIP_METRO_CODE", metrocodestr);
-                setn_geoip_output(cfg, r, "GEOIP_AREA_CODE", areacodestr);
+                set_geoip_output(cfg, r, "GEOIP_DMA_CODE", metrocodestr);
+                set_geoip_output(cfg, r, "GEOIP_METRO_CODE", metrocodestr);
+                set_geoip_output(cfg, r, "GEOIP_AREA_CODE", areacodestr);
                 sprintf(latstr, "%f", gir->latitude);
                 sprintf(lonstr, "%f", gir->longitude);
-                setn_geoip_output(cfg, r, "GEOIP_LATITUDE", latstr);
-                setn_geoip_output(cfg, r, "GEOIP_LONGITUDE", lonstr);
+                set_geoip_output(cfg, r, "GEOIP_LATITUDE", latstr);
+                set_geoip_output(cfg, r, "GEOIP_LONGITUDE", lonstr);
                 setn_geoip_output(cfg, r, "GEOIP_POSTAL_CODE",
                                   gir->postal_code);
                 GeoIPRecord_delete(gir);
