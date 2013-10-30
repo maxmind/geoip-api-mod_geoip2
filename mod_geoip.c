@@ -513,7 +513,7 @@ static int geoip_header_parser(request_rec * r)
     }
 #endif
 
-    setn_geoip_output(cfg, r, "GEOIP_ADDR", ipaddr);
+    set_geoip_output(cfg, r, "GEOIP_ADDR", ipaddr);
 
     for (i = 0; i < cfg->numGeoIPFiles; i++) {
 
