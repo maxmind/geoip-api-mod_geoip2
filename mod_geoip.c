@@ -610,7 +610,7 @@ static int geoip_header_parser(request_rec * r)
                     setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME",
                                       GeoIP_country_name[country_id]);
                     setn_geoip_output(cfg, r, "GEOIP_CONTINENT_CODE",
-                                      GeoIP_continent_code[country_id]);
+                                      GeoIP_country_continent[country_id]);
                 }
                 if (giregion->region[0]) {
                     setn_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
@@ -673,7 +673,7 @@ static int geoip_header_parser(request_rec * r)
                                   gir->continent_code);
                 setn_geoip_output(cfg, r, "GEOIP_COUNTRY_CODE",
                                   gir->country_code);
-                setn_geoip_output(cfg, r "GEOIP_COUNTRY_NAME",
+                setn_geoip_output(cfg, r, "GEOIP_COUNTRY_NAME",
                                   gir->country_name);
                 setn_geoip_output(cfg, r, "GEOIP_REGION", gir->region);
                 setn_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
