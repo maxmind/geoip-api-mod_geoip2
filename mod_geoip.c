@@ -367,7 +367,7 @@ static void set_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
             apr_table_set(r->notes, key, value);
         }
         if (cfg->GeoIPOutput & GEOIP_ENV) {
-            apr_table_set(r->subprocess_env, value, key);
+            apr_table_set(r->subprocess_env, key, value);
         }
     }
 }
@@ -380,7 +380,7 @@ static void setn_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
             apr_table_setn(r->notes, key, value);
         }
         if (cfg->GeoIPOutput & GEOIP_ENV) {
-            apr_table_setn(r->subprocess_env, value, key);
+            apr_table_setn(r->subprocess_env, key, value);
         }
     }
 }
