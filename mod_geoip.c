@@ -530,7 +530,7 @@ static int geoip_header_parser(request_rec * r)
         switch (databaseType) {
         case GEOIP_NETSPEED_EDITION_REV1:
             orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
-            setn_geoip_output(cfg, r, GEOIP_NETSPEED, orgorisp);
+            setn_geoip_output(cfg, r, "GEOIP_NETSPEED", orgorisp);
             break;
 
         case GEOIP_NETSPEED_EDITION:
@@ -544,7 +544,7 @@ static int geoip_header_parser(request_rec * r)
             } else if (netspeed == GEOIP_CORPORATE_SPEED) {
                 netspeedstring = "corporate";
             }
-            setn_geoip_output(cfg, r, GEOIP_NETSPEED, netspeedstring);
+            setn_geoip_output(cfg, r, "GEOIP_NETSPEED", netspeedstring);
             break;
         case GEOIP_COUNTRY_EDITION_V6:
             /* Get the Country ID */
