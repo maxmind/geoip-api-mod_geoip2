@@ -651,8 +651,6 @@ static int geoip_header_parser(request_rec * r)
 
                 set_geoip_output(cfg, r, "GEOIP_POSTAL_CODE_V6",
                                   gir->postal_code);
-                set_geoip_output(cfg, r, "GEOIP_POSTAL_CODE_V6",
-                                  gir->postal_code);
                 GeoIPRecord_delete(gir);
             }
 
