@@ -615,9 +615,8 @@ static int geoip_header_parser(request_rec * r)
                 if (giregion->region[0]) {
                     set_geoip_output(cfg, r, "GEOIP_REGION", giregion->region);
                 }
-                set_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
                 if (region_name != NULL) {
-                    apr_table_set(r->notes, "GEOIP_REGION_NAME", region_name);
+                    set_geoip_output(cfg, r, "GEOIP_REGION_NAME", region_name);
                 }
                 GeoIPRegion_delete(giregion);
             }
