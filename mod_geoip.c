@@ -115,7 +115,7 @@ const char *netspeedstring;
 module AP_MODULE_DECLARE_DATA geoip_module;
 
 uint32_t _private_ipv4_networks[] = {
-    167772160U, 184549375U,     // 10.0.0.0/8
+    167772160U,  184549375U,    // 10.0.0.0/8
     1681915904U, 1686110207U,   // 100.64.0.0/10
     2130706432U, 2147483647U,   // 127.0.0.0/8
     2886729728U, 2887778303U,   // 172.16.0.0/12
@@ -123,7 +123,7 @@ uint32_t _private_ipv4_networks[] = {
     3227017984U, 3227018239U,   // 192.88.99.0/24
     3232235520U, 3232301055U,   // 192.168.0.0/16
     2851995648U, 2852061183U,   // 169.254.0.0/16
-    0U, 0U
+    0U,          0U
 };
 
 static int _is_private(uint32_t ipnum)
@@ -132,8 +132,9 @@ static int _is_private(uint32_t ipnum)
     uint32_t *p = _private_ipv4_networks;
     while ((min = *p++)) {
         max = *p++;
-        if (ipnum < min || ipnum > max)
+        if (ipnum < min || ipnum > max) {
             continue;
+        }
         return 1;
     }
     return 0;
@@ -147,8 +148,9 @@ char *_get_ip_from_xff(const char *xffheader)
     if (xff) {
         for (xff_ip = strtok_r(xff, " \t,", &break_ptr); xff_ip;
              xff_ip = strtok_r(NULL, " \t,", &break_ptr)) {
-            if (1 != inet_pton(AF_INET, xff_ip, &ipnum))
+            if (1 != inet_pton(AF_INET, xff_ip, &ipnum)) {
                 continue;
+            }
             ipnum = htonl(ipnum);
             if (!_is_private(ipnum)) {
                 char *found = strdup(xff_ip);
@@ -169,7 +171,7 @@ static void *geoip_create_dir_config(apr_pool_t * p, char *d)
     geoip_dir_config_rec *dcfg;
 
     dcfg =
-        (geoip_dir_config_rec *) apr_pcalloc(p, sizeof(geoip_dir_config_rec));
+        (geoip_dir_config_rec *)apr_pcalloc(p, sizeof(geoip_dir_config_rec));
     dcfg->GeoIPEnabled = 0;
 
     return dcfg;
@@ -202,7 +204,7 @@ static void *create_geoip_server_config(apr_pool_t * p, server_rec * d)
 static apr_status_t geoip_cleanup(void *cfgdata)
 {
     int i;
-    geoip_server_config_rec *cfg = (geoip_server_config_rec *) cfgdata;
+    geoip_server_config_rec *cfg = (geoip_server_config_rec *)cfgdata;
     if (cfg->gips) {
         for (i = 0; i < cfg->numGeoIPFiles; i++) {
             if (cfg->gips[i]) {
@@ -222,7 +224,7 @@ static void geoip_server_init(apr_pool_t * p, server_rec * s)
     geoip_server_config_rec *cfg;
     int i;
     cfg = (geoip_server_config_rec *)
-        ap_get_module_config(s->module_config, &geoip_module);
+          ap_get_module_config(s->module_config, &geoip_module);
 
     if (!cfg->gips) {
         if (cfg->GeoIPFilenames != NULL) {
@@ -267,7 +269,7 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
     int i, flags;
 
     cfg = (geoip_server_config_rec *)
-        ap_get_module_config(s->module_config, &geoip_module);
+          ap_get_module_config(s->module_config, &geoip_module);
 
     if (cfg->gips) {
         if (cfg->GeoIPFilenames != NULL) {
@@ -275,8 +277,9 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
                 flags =
                     (cfg->GeoIPFlags2[i] ==
                      GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i];
-                if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE))
+                if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE)) {
                     continue;
+                }
                 if (cfg->gips[i]) {
                     GeoIP_delete(cfg->gips[i]);
                 }
@@ -295,8 +298,9 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
                 }
             }
         } else {
-            if (cfg->gips[0])
+            if (cfg->gips[0]) {
                 GeoIP_delete(cfg->gips[0]);
+            }
             cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
             if (!cfg->gips[0]) {
                 ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
@@ -324,11 +328,13 @@ static int geoip_post_read_request(request_rec * r)
     geoip_server_config_rec *cfg;
     cfg = ap_get_module_config(r->server->module_config, &geoip_module);
 
-    if (!cfg)
+    if (!cfg) {
         return DECLINED;
+    }
 
-    if (!cfg->GeoIPEnabled)
+    if (!cfg->GeoIPEnabled) {
         return DECLINED;
+    }
 
     return geoip_header_parser(r);
 }
@@ -340,15 +346,18 @@ static int geoip_per_dir(request_rec * r)
 
     geoip_server_config_rec *cfg =
         ap_get_module_config(r->server->module_config, &geoip_module);
-    if (cfg && cfg->GeoIPEnabled)
+    if (cfg && cfg->GeoIPEnabled) {
         return DECLINED;
+    }
 
     dcfg = ap_get_module_config(r->per_dir_config, &geoip_module);
-    if (!dcfg)
+    if (!dcfg) {
         return DECLINED;
+    }
 
-    if (!dcfg->GeoIPEnabled)
+    if (!dcfg->GeoIPEnabled) {
         return DECLINED;
+    }
 
     return geoip_header_parser(r);
 }
@@ -414,8 +423,9 @@ static int geoip_header_parser(request_rec * r)
     char *comma_ptr;
     cfg = ap_get_module_config(r->server->module_config, &geoip_module);
 
-    if (!cfg)
+    if (!cfg) {
         return DECLINED;
+    }
 
     if (!cfg->scanProxyHeaders) {
         ipaddr = _get_client_ip(r);
@@ -451,8 +461,9 @@ static int geoip_header_parser(request_rec * r)
             if (cfg->proxyHeaderMode ==
                 GEOIP_PROXY_HEADER_MODE_FIRST_NON_PRIVATE_IP) {
                 ipaddr = free_me = _get_ip_from_xff(ipaddr_ptr);
-                if (!ipaddr)
+                if (!ipaddr) {
                     ipaddr = _get_client_ip(r);
+                }
             } else {
                 ipaddr = free_me = (char *)calloc(8 * 4 + 7 + 1, sizeof(char));
                 /* proxyHeaderMode is
@@ -478,8 +489,9 @@ static int geoip_header_parser(request_rec * r)
 
                 strncpy(ipaddr, ipaddr_ptr, 8 * 4 + 7);
                 comma_ptr = strchr(ipaddr, ',');
-                if (comma_ptr != 0)
+                if (comma_ptr != 0) {
                     *comma_ptr = '\0';
+                }
             }
         }
     }
@@ -530,8 +542,9 @@ static int geoip_header_parser(request_rec * r)
          * skip database handles that can not be opned for some
          * reason
          */
-        if (cfg->gips[i] == NULL)
+        if (cfg->gips[i] == NULL) {
             continue;
+        }
 
         databaseType = cfg->gips[i] ? GeoIP_database_edition(cfg->gips[i]) : -1;        /* -1 is "magic value"
                                                                                          * in case file not
@@ -700,8 +713,9 @@ static int geoip_header_parser(request_rec * r)
         }
     }
 
-    if (free_me)
+    if (free_me) {
         free(free_me);
+    }
     return OK;
 }
 
@@ -709,10 +723,12 @@ static const char *geoip_scanproxyfield(cmd_parms * cmd, void *dummy,
                                         const char *field)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!field)
+    if (!field) {
         return NULL;
+    }
 
     conf->GeoIPProxyField = (char *)apr_pstrdup(cmd->pool, field);
     return NULL;
@@ -724,10 +740,12 @@ static const char *geoip_use_first_non_private_x_forwarded_for_ip(cmd_parms *
                                                                   int arg)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->proxyHeaderMode =
         arg ? GEOIP_PROXY_HEADER_MODE_FIRST_NON_PRIVATE_IP :
@@ -739,10 +757,12 @@ static const char *geoip_use_first_x_forwarded_for_ip(cmd_parms * cmd,
                                                       void *dummy, int arg)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->proxyHeaderMode =
         arg ? GEOIP_PROXY_HEADER_MODE_FIRST_IP :
@@ -754,10 +774,12 @@ static const char *geoip_use_last_x_forwarded_for_ip(cmd_parms * cmd,
                                                      void *dummy, int arg)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->proxyHeaderMode =
         arg ? GEOIP_PROXY_HEADER_MODE_LAST_IP : GEOIP_PROXY_HEADER_MODE_DEFAULT;
@@ -767,10 +789,12 @@ static const char *geoip_use_last_x_forwarded_for_ip(cmd_parms * cmd,
 static const char *geoip_scanproxy(cmd_parms * cmd, void *dummy, int arg)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->scanProxyHeaders = arg;
     return NULL;
@@ -788,10 +812,11 @@ static const char *set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
     }
     /* no then it is server config */
     conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+           ap_get_module_config(cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->GeoIPEnabled = arg;
     return NULL;
@@ -800,10 +825,12 @@ static const char *set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
 static const char *set_geoip_enable_utf8(cmd_parms * cmd, void *dummy, int arg)
 {
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!conf)
+    if (!conf) {
         return "mod_geoip: server structure not allocated";
+    }
 
     conf->GeoIPEnableUTF8 = arg;
     return NULL;
@@ -814,10 +841,12 @@ static const char *set_geoip_filename(cmd_parms * cmd, void *dummy,
 {
     int i;
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
-        ap_get_module_config(cmd->server->module_config, &geoip_module);
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
 
-    if (!filename)
+    if (!filename) {
         return NULL;
+    }
 
     i = conf->numGeoIPFiles;
     conf->numGeoIPFiles++;
@@ -846,9 +875,9 @@ static const char *set_geoip_output_mode(cmd_parms * cmd, void *dummy,
                                          const char *arg)
 {
     geoip_server_config_rec *cfg =
-        (geoip_server_config_rec *) ap_get_module_config(cmd->
-                                                         server->module_config,
-                                                         &geoip_module);
+        (geoip_server_config_rec *)ap_get_module_config(cmd->
+                                                        server->module_config,
+                                                        &geoip_module);
 
     if (cfg->GeoIPOutput & GEOIP_DEFAULT) {
         /* was set to default, clear so can be reset with user specified values */
@@ -871,9 +900,9 @@ static void *make_geoip(apr_pool_t * p, server_rec * d)
     geoip_server_config_rec *dcfg;
 
     dcfg =
-        (geoip_server_config_rec *) apr_pcalloc(p,
-                                                sizeof
-                                                (geoip_server_config_rec));
+        (geoip_server_config_rec *)apr_pcalloc(p,
+                                               sizeof
+                                               (geoip_server_config_rec));
     dcfg->gips = NULL;
     dcfg->numGeoIPFiles = 0;
     dcfg->GeoIPFilenames = NULL;
@@ -886,36 +915,59 @@ static void *make_geoip(apr_pool_t * p, server_rec * d)
 }
 
 static const command_rec geoip_cmds[] = {
-    AP_INIT_FLAG("GeoIPScanProxyHeaders", geoip_scanproxy, NULL, RSRC_CONF,
+    AP_INIT_FLAG("GeoIPScanProxyHeaders",
+                 geoip_scanproxy,
+                 NULL,
+                 RSRC_CONF,
                  "Get IP from HTTP_CLIENT IP or X-Forwarded-For"),
-    AP_INIT_TAKE1("GeoIPScanProxyHeaderField", geoip_scanproxyfield, NULL,
-                  RSRC_CONF, "Get IP from this header field, only"),
+    AP_INIT_TAKE1("GeoIPScanProxyHeaderField",
+                  geoip_scanproxyfield,
+                  NULL,
+                  RSRC_CONF,
+                  "Get IP from this header field, only"),
     AP_INIT_FLAG("GeoIPUseFirstNonPrivateXForwardedForIP",
-                 geoip_use_first_non_private_x_forwarded_for_ip, NULL,
+                 geoip_use_first_non_private_x_forwarded_for_ip,
+                 NULL,
                  RSRC_CONF,
                  "For more IP's in X-Forwarded-For, use the first non private IP"),
     AP_INIT_FLAG("GeoIPUseFirstXForwardedForIP",
-                 geoip_use_first_x_forwarded_for_ip, NULL, RSRC_CONF,
+                 geoip_use_first_x_forwarded_for_ip,
+                 NULL,
+                 RSRC_CONF,
                  "For more IP's in X-Forwarded-For, use the first"),
     AP_INIT_FLAG("GeoIPUseLastXForwardedForIP",
-                 geoip_use_last_x_forwarded_for_ip, NULL, RSRC_CONF,
+                 geoip_use_last_x_forwarded_for_ip,
+                 NULL,
+                 RSRC_CONF,
                  "For more IP's in X-Forwarded-For, use the last"),
-    AP_INIT_FLAG("GeoIPEnable", set_geoip_enable, NULL,
-                 RSRC_CONF | OR_FILEINFO, "Turn on mod_geoip"),
-    AP_INIT_FLAG("GeoIPEnableUTF8", set_geoip_enable_utf8, NULL, RSRC_CONF,
+    AP_INIT_FLAG("GeoIPEnable",
+                 set_geoip_enable,
+                 NULL,
+                 RSRC_CONF | OR_FILEINFO,
+                 "Turn on mod_geoip"),
+    AP_INIT_FLAG("GeoIPEnableUTF8",
+                 set_geoip_enable_utf8,
+                 NULL,
+                 RSRC_CONF,
                  "Turn on utf8 characters for city names"),
-    AP_INIT_TAKE12("GeoIPDBFile", set_geoip_filename, NULL, RSRC_CONF,
+    AP_INIT_TAKE12("GeoIPDBFile",
+                   set_geoip_filename,
+                   NULL,
+                   RSRC_CONF,
                    "Path to GeoIP Data File"),
-    AP_INIT_ITERATE("GeoIPOutput", set_geoip_output_mode, NULL, RSRC_CONF,
+    AP_INIT_ITERATE("GeoIPOutput",
+                    set_geoip_output,
+                    NULL,
+                    RSRC_CONF,
                     "Specify output method(s)"),
-    {NULL}
+    { NULL }
 };
 
 static void geoip_register_hooks(apr_pool_t * p)
 {
     /* make sure we run before mod_rewrite's handler */
     static const char *const aszSucc[] =
-        { "mod_setenvif.c", "mod_rewrite.c", NULL };
+    { "mod_setenvif.c", "mod_rewrite.c", NULL };
 
     /* we have two entry points, the header_parser hook, right before
      * the authentication hook used for Dirctory specific enabled geoiplookups
@@ -941,10 +993,10 @@ static void geoip_register_hooks(apr_pool_t * p)
 /* Dispatch list for API hooks */
 module AP_MODULE_DECLARE_DATA geoip_module = {
     STANDARD20_MODULE_STUFF,
-    geoip_create_dir_config,    /* create per-dir    config structures */
-    NULL,                       /* merge  per-dir    config structures */
-    make_geoip,                 /* create per-server config structures */
-    NULL,                       /* merge  per-server config structures */
-    geoip_cmds,                 /* table of config file commands       */
-    geoip_register_hooks        /* register hooks                      */
+    geoip_create_dir_config, /* create per-dir    config structures */
+    NULL,                    /* merge  per-dir    config structures */
+    make_geoip,              /* create per-server config structures */
+    NULL,                    /* merge  per-server config structures */
+    geoip_cmds,              /* table of config file commands       */
+    geoip_register_hooks     /* register hooks                      */
 };
