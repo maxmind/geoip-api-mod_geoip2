@@ -70,8 +70,8 @@
 #include "apr_strings.h"
 #include "util_script.h"
 #include <arpa/inet.h>
-#include <GeoIP.h>
-#include <GeoIPCity.h>
+#include "GeoIP.h"
+#include "GeoIPCity.h"
 
 typedef struct {
     int GeoIPEnabled;
