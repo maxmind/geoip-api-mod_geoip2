@@ -621,14 +621,14 @@ static int geoip_header_parser(request_rec * r)
                 if (giregion->country_code[0]) {
                     region_name =
                         GeoIP_region_name_by_code
-                        (giregion->country_code, giregion->region);
+                            (giregion->country_code, giregion->region);
                     geoip_say(cfg, r, "GEOIP_COUNTRY_CODE",
-                                      giregion->country_code);
+                              giregion->country_code);
                     country_id = GeoIP_id_by_code(giregion->country_code);
                     geoip_say(cfg, r, "GEOIP_COUNTRY_NAME",
-                                      GeoIP_country_name[country_id]);
+                              GeoIP_country_name[country_id]);
                     geoip_say(cfg, r, "GEOIP_CONTINENT_CODE",
-                                      GeoIP_country_continent[country_id]);
+                              GeoIP_country_continent[country_id]);
                 }
                 if (giregion->region[0]) {
                     geoip_say(cfg, r, "GEOIP_REGION", giregion->region);
