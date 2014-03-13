@@ -682,7 +682,7 @@ static int geoip_header_parser(request_rec * r)
                 sprintf(areacodestr, "%d", gir->area_code);
                 geoip_say(cfg, r, "GEOIP_CONTINENT_CODE", gir->continent_code);
                 geoip_say(cfg, r, "GEOIP_COUNTRY_CODE", gir->country_code);
-                geoip_say(cfg, r "GEOIP_COUNTRY_NAME", gir->country_name);
+                geoip_say(cfg, r, "GEOIP_COUNTRY_NAME", gir->country_name);
                 geoip_say(cfg, r, "GEOIP_REGION", gir->region);
                 geoip_say(cfg, r, "GEOIP_REGION_NAME", region_name);
                 geoip_say(cfg, r, "GEOIP_CITY", gir->city);
