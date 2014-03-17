@@ -117,7 +117,8 @@ you use. To do so, use the `GeoIPOutput` configuration directive:
 
     GeoIPOutput Notes   # Sets the Apache notes table only
     GeoIPOutput Env     # Sets environment variables only
-    GeoIPOutput All     # Sets both (default behaviour)
+    GeoIPOutput Request # Sets input headers with the geo location information
+    GeoIPOutput All     # Sets all three (default behaviour)
 
 ### Proxy-Related Directives
 
@@ -154,6 +155,12 @@ non private IP Address.
 Apache 2.4 users using mod_remoteip to pick the IP address of the user should
 disable GeoIPScanProxyHeaders. Mod_geoip2 will use whatever mod_remoteip
 provides.
+
+    GeoIPScanProxyHeaderField FieldName
+
+Sometimes it is useful to use another field as source for the clients IP
+Address. Use this directive to change the ProxyHeaderField. Usually a good
+choice, if X-Forward-For does not work in your setup.
 
 Output Variables
 ----------------
