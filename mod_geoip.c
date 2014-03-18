@@ -381,19 +381,6 @@ static void geoip_say(geoip_server_config_rec * cfg, request_rec * r,
         if (cfg->GeoIPOutput & GEOIP_ENV) {
             apr_table_set(r->subprocess_env, key, value);
         }
-    }
-}
-
-static void setn_geoip_output(geoip_server_config_rec * cfg, request_rec * r,
-                              const char *key, const char *value)
-{
-    if (value) {
-        if (cfg->GeoIPOutput & GEOIP_NOTES) {
-            apr_table_set(r->notes, key, value);
-        }
-        if (cfg->GeoIPOutput & GEOIP_ENV) {
-            apr_table_set(r->subprocess_env, key, value);
-        }
         if (cfg->GeoIPOutput & GEOIP_REQUEST) {
             apr_table_set(r->headers_in, key, value);
         }
@@ -956,7 +943,7 @@ static const command_rec geoip_cmds[] = {
                    RSRC_CONF,
                    "Path to GeoIP Data File"),
     AP_INIT_ITERATE("GeoIPOutput",
-                    set_geoip_output,
+                    set_geoip_output_mode,
                     NULL,
                     RSRC_CONF,
                     "Specify output method(s)"),
