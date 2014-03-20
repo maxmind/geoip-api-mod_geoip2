@@ -158,9 +158,9 @@ provides.
 
     GeoIPScanProxyHeaderField FieldName
 
-Sometimes it is useful to use another field as source for the clients IP
-Address. Use this directive to change the ProxyHeaderField. Usually a good
-choice, if X-Forward-For does not work in your setup.
+Sometimes it is useful to use another field as the source for the client's IP
+address. You can set this directive to tell this module which header to look
+at in order to determine the client's IP addres.
 
 Output Variables
 ----------------
