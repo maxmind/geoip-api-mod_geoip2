@@ -15,10 +15,11 @@ The latest version of mod_geoip2 is version 1.2.9.
 
 ## Installation
 
-You can [download
-mod_geoip2](http://www.maxmind.com/download/geoip/api/mod_geoip2/) from
-our download server. See the `INSTALL` file in the tarball for
-installation details.
+You can
+[download mod_geoip2](https://github.com/maxmind/geoip-api-mod_geoip2/releases)
+from GitHub or get the latest development version from
+[GitHub](https://github.com/maxmind/geoip-api-mod_geoip2). See the `INSTALL`
+file in the tarball for installation details.
 
 ## Overview
 
