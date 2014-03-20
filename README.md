@@ -1,4 +1,4 @@
-# mod_geoip2 1.2.8
+# mod_geoip2 1.2.9
 
 The mod_geoip2 module embeds GeoIP database lookups into the Apache web
 server. It is only capable of looking up the IP of a client that
@@ -11,7 +11,7 @@ with Apache 1.
 
 ## Version
 
-The latest version of mod_geoip2 is version 1.2.8.
+The latest version of mod_geoip2 is version 1.2.9.
 
 ## Installation
 

@@ -1,9 +1,10 @@
+1.2.9 Mar 20 2014
     - Added a new directive, GeoIPScanProxyHeaderField, to specify a custom
       header which contains the client's IP address (Sascha Kuehndel)
 	- Added the ability to forward the result fields to a backend server/proxy
       via request header (Sascha Kuehndel)
 
-1.2.8 Jan 8th 2013
+1.2.9 Jan 8th 2013
 	- Add GeoIPUseFirstNonPrivateXForwardedForIP option (Boris Zentner)
 	- Support Apache 2.4 (Boris Zentner)
         - Use GeoIP_id_by_addr_v6 instead of GeoIP_country_id_by_addr_v6 (Boris Zentner)
