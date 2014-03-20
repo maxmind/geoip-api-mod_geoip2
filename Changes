@@ -1,44 +1,72 @@
-        - Add support to configure a own forward ip header field (Sascha Kuehndel)
-	- Add the ability to forward the result fields to a backend server/proxy, via request header (Sascha Kuehndel)
+    - Added a new directive, GeoIPScanProxyHeaderField, to specify a custom
+      header which contains the client's IP address (Sascha Kuehndel)
+	- Added the ability to forward the result fields to a backend server/proxy
+      via request header (Sascha Kuehndel)
+
 1.2.8 Jan 8th 2013
-	- Add GeoIPUseFirstNonPrivateXForwardedForIP option ( Boris Zentner )
-	- Support Apache 2.4 ( Boris Zentner )
-        - Use GeoIP_id_by_addr_v6 instead of GeoIP_country_id_by_addr_v6 ( Boris Zentner )
-        - Include util_script.h to silence warning about ap_add_common_vars ( Boris Zentner )
+	- Add GeoIPUseFirstNonPrivateXForwardedForIP option (Boris Zentner)
+	- Support Apache 2.4 (Boris Zentner)
+        - Use GeoIP_id_by_addr_v6 instead of GeoIP_country_id_by_addr_v6 (Boris Zentner)
+        - Include util_script.h to silence warning about ap_add_common_vars (Boris Zentner)
+
 1.2.7 Aug 23th 2011
-        - Add support for GEOIP_NETSPEED_REV1 ( Boris Zentner )
-        - Experimental support for GEOIP_COUNTRY_EDITION_V6 ( Boris Zentner )
-        - Add GEOIP_DOMAIN_EDITION support ( Boris Zentner )
+        - Add support for GEOIP_NETSPEED_REV1 (Boris Zentner)
+        - Experimental support for GEOIP_COUNTRY_EDITION_V6 (Boris Zentner)
+        - Add GEOIP_DOMAIN_EDITION support (Boris Zentner)
+
 1.2.6 Sep 11th 2008
-	- GEOIP_METRO_CODE replace the depreciated GEOIP_DMA_CODE ( Boris Zentner )
+	- GEOIP_METRO_CODE replace the depreciated GEOIP_DMA_CODE (Boris Zentner)
+
 1.2.5 Aug 13th 2008
-	! Fix GEOIP_REGION and GEOIP_COUNTRY_CODE when used with the GeoIPRegion database. Both are only set if a region or country was found. Previously a empty string was assigned to both ( Boris Zentner )
-	- Add GEOIP_REGION_NAME for City and Region databases ( Boris Zentner )
+	! Fix GEOIP_REGION and GEOIP_COUNTRY_CODE when used with the GeoIPRegion
+      database. Both are only set if a region or country was found. Previously
+      a empty string was assigned to both (Boris Zentner)
+	- Add GEOIP_REGION_NAME for City and Region databases (Boris Zentner)
+
 1.2.4 Jun 10th 2008
-	! mod_geoip2 has sets GEOIP_COUNTRY_CODE to -- for unknown countries when used with the country database. But for any other database ( City for example ) GEOIP_COUNTRY_CODE is unset for unknown countries. This is fixed now. Same for GEOIP_CONTINENT_CODE and GEOIP_COUNTRY_NAME. ( Boris Zentner )
-	- Add GEOIP_ADDR. That's the address used to compute the geoip information. Exported as env, notes or both as usual ( Jason Caldwell )
-	- Try to run always before mod_setenvif and mod_rewrite. ( Boris Zentner ) 
+	! mod_geoip2 has sets GEOIP_COUNTRY_CODE to -- for unknown countries when
+      used with the country database. But for any other database (City for
+      example) GEOIP_COUNTRY_CODE is unset for unknown countries. This is
+      fixed now. Same for GEOIP_CONTINENT_CODE and GEOIP_COUNTRY_NAME. (Boris
+      Zentner)
+	- Add GEOIP_ADDR. That's the address used to compute the geoip
+      information. Exported as env, notes or both as usual (Jason Caldwell)
+	- Try to run always before mod_setenvif and mod_rewrite. (Boris Zentner) 
+
 1.2.3 Apr 26th 2008
-	- Skip files that we can not open for some reason ( permission/typo ). Check and skip empty slots in geoip_header_parser ( Boris Zentner )
-	- Slight performance increase - don't make per_dir ap_get_module_config call where we return DECLINED because cfg->GeoIPEnabled is true (Guenter Knauf)
-	- NetWare/Win32 compilation fixes, since can't declare vars in middle of code (Guenter Knauf)
+	- Skip files that we can not open for some reason (permission/typo). Check
+      and skip empty slots in geoip_header_parser (Boris Zentner)
+	- Slight performance increase - don't make per_dir ap_get_module_config
+      call where we return DECLINED because cfg->GeoIPEnabled is true (Guenter
+      Knauf)
+	- NetWare/Win32 compilation fixes, since can't declare vars in middle of
+      code (Guenter Knauf)
 
 1.2.2 Mar 18th 2008
-	- Fix race condition for IO based caches like Standard. MMapCache and MemoryCache are not affected. ( Boris Zentner )
+	- Fix race condition for IO based caches like Standard. MMapCache and
+      MemoryCache are not affected. (Boris Zentner)
 
 1.2.1 Dec 17th 2007
-	! Notice, that all directives are _only_ valid in server context. Expect GeoIPEnabled. Check you configuraion with apachectl configtest ( Boris Zentner )
+	! Notice - all directives are _only_ valid in server context except
+      GeoIPEnabled. Check you configuration with apachectl configtest (Boris
+      Zentner)
 	- Added MMapCache option (Boris Zentner)
-	- Change GeoIPEnabled from a serverwide option to a server/directory/location keyword. (Boris Zentner)
-	- Fix a small memleak per child. Allocated in geoip_child_init free in geoip_cleanup (Boris Zentner)
-	- GeoIP databases get used serverwide now. Not per child. See the README. (Boris Zentner)
+	- Change GeoIPEnabled from a serverwide option to a
+      server/directory/location keyword. (Boris Zentner)
+	- Fix a small memleak per child. Allocated in geoip_child_init free in
+      geoip_cleanup (Boris Zentner)
+	- GeoIP databases get used serverwide now. Not per child. See the
+      README. (Boris Zentner)
 	- Update README with more examples (Boris Zentner)
 	- Added support for UTF8 output for GeoIP City databases (Boris Zentner)
 
 1.2.0 Aug 30th 2007
-	- Fix segfault issue if GeoIP.dat file cannot be opened (Vladimir Sedlacek)
-	- Added support for GEOIP_CONTINENT_CODE for GeoIP Country and City (Frank Mather)
-	- Added GeoIPScanProxyHeaders directive to handle X-Forwarded-For headers (Frank Mather)
+	- Fix segfault issue if GeoIP.dat file cannot be opened (Vladimir
+      Sedlacek)
+	- Added support for GEOIP_CONTINENT_CODE for GeoIP Country and City (Frank
+      Mather)
+	- Added GeoIPScanProxyHeaders directive to handle X-Forwarded-For headers
+      (Frank Mather)
 	- Updated documentation to specify that GeoIPFlags need to be passed
 	  as second parameter to GeoIPDBFile, instead of using the GeoIPFlags directive
 
@@ -70,19 +98,19 @@
 	- Memory Leak fix when using GeoIP City database (Shane Nelson)
 
 1.1.2 Aug 12th 2004
-	- Added support for GeoIP Netspeed Edition ( Frank Mather )
+	- Added support for GeoIP Netspeed Edition (Frank Mather)
 	- Added support for GeoIP City setting GEOIP_DMA_CODE, GEOIP_AREA_CODE, GEOIP_LATITUDE,
-		GEOIP_LONGITUDE, and GEOIP_POSTAL_CODE ( Frank Mather )
+		GEOIP_LONGITUDE, and GEOIP_POSTAL_CODE (Frank Mather)
 
 1.1.1 Jul 12th 2004
 	- Added more documentation for using from PHP
 	- Fixed compile errors and warnings
 
 1.1.0 Apr 19th 2004
-	- Added support for GeoIP Region, City, ISP and Organization ( Frank Mather )
+	- Added support for GeoIP Region, City, ISP and Organization (Frank Mather)
 
 1.0.6 Aug 30th 2002
-	- Added GeoIP_delete upon cleanup ( Corris Randall )
+	- Added GeoIP_delete upon cleanup (Corris Randall)
 
 1.0.5 Aug 29th 2002
-	- Initial Release ( Corris Randall )
+	- Initial Release (Corris Randall)
