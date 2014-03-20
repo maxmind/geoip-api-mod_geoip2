@@ -5,6 +5,10 @@ server. It is only capable of looking up the IP of a client that
 connects to the web server, as opposed to looking up arbitrary
 addresses.
 
+This module works with Apache 2. Please use
+[mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
+with Apache 1.
+
 ## Version
 
 The latest version of mod_geoip2 is version 1.2.8.
