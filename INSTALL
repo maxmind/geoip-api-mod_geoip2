@@ -2,7 +2,7 @@
 Requirements:
 
 Apache 2.0.40 or higher installed  If using RPM, the httpd-devel package containing apxs may need to be installed
-GeoIP 1.4.3 or higher installed, download from http://maxmind.com/download/geoip/api/c
+GeoIP 1.4.3 or higher installed, download from http://dev.maxmind.com/geoip/legacy/downloadable/#MaxMind-Supported_APIs
 
 ===========================================================================
 To build mod_geoip as a dynamically loadable module:
