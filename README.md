@@ -1,23 +1,28 @@
-mod_geoip2 1.2.8
-----------------
+mod_geoip2 Apache module
+========================
 
 The mod_geoip2 module embeds GeoIP database lookups into the Apache web
 server. It is only capable of looking up the IP of a client that
 connects to the web server, as opposed to looking up arbitrary
 addresses.
 
+This module works with Apache 2. Please use
+[mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
+with Apache 1.
+
 Version
 -------
 
-The latest version of mod_geoip2 is version 1.2.8.
+The latest version of mod_geoip2 is version 1.2.9.
 
 Installation
 ------------
 
 You can [download
-mod_geoip2](http://www.maxmind.com/download/geoip/api/mod_geoip2/) from
-our download server. See the `INSTALL` file in the tarball for
-installation details.
+mod_geoip2](https://github.com/maxmind/geoip-api-mod_geoip2/releases)
+from GitHub or get the latest development version from
+[GitHub](https://github.com/maxmind/geoip-api-mod_geoip2). See the
+`INSTALL` file in the tarball for installation details.
 
 Overview
 --------
@@ -28,7 +33,8 @@ module is free software, and is licensed under the [Apache
 license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 To compile and install this module, you must first install [libGeoIP
-1.4.3](https://github.com/maxmind/geoip-api-c/releases) or newer.
+1.4.3](http://dev.maxmind.com/geoip/legacy/downloadable/#MaxMind-Supported_APIs)
+or newer.
 
 The mod_geoip2 module takes effect either during request header parsing
 phase or the post read request phase, depending on whether it is
@@ -84,9 +90,9 @@ been updated, set the `CheckCache` flag:
     GeoIPDBFile /path/to/GeoIP.dat CheckCache
 
 Before making a call to the database, geoip will check the GeoIP.dat
-file to see if it has changed. If it has, then it will reload the
-file. With this option, you do not have to restart Apache when you
-update your GeoIP databases.
+file to see if it has changed. If it has, then it will reload the file.
+With this option, you do not have to restart Apache when you update your
+GeoIP databases.
 
 If you would like to turn on partial memory caching, use the
 `IndexCache` flag:
@@ -104,8 +110,8 @@ Currently, multiple GeoIPFlags options can not be combined.
 
 ### Enabling UTF-8 Output
 
-You may change the output charset from ISO-8859-1 (Latin-1) to UTF-8 with
-this directive:
+You may change the output charset from ISO-8859-1 (Latin-1) to UTF-8
+with this directive:
 
     GeoIPEnableUTF8 On
 
@@ -117,7 +123,8 @@ you use. To do so, use the `GeoIPOutput` configuration directive:
 
     GeoIPOutput Notes   # Sets the Apache notes table only
     GeoIPOutput Env     # Sets environment variables only
-    GeoIPOutput All     # Sets both (default behaviour)
+    GeoIPOutput Request # Sets input headers with the geo location information
+    GeoIPOutput All     # Sets all three (default behaviour)
 
 ### Proxy-Related Directives
 
@@ -146,14 +153,20 @@ the default behavior is to use the first IP address. You can set the
 
     GeoIPUseLastXForwardedForIP On
 
-Or use `GeoIPUseFirstNonPrivateXForwardedForIP` to use the first
-non private IP Address.
+Or use `GeoIPUseFirstNonPrivateXForwardedForIP` to use the first non
+private IP Address.
 
     GeoIPUseFirstNonPrivateXForwardedForIP On
 
-Apache 2.4 users using mod_remoteip to pick the IP address of the user should
-disable GeoIPScanProxyHeaders. Mod_geoip2 will use whatever mod_remoteip
-provides.
+Apache 2.4 users using mod_remoteip to pick the IP address of the user
+should disable GeoIPScanProxyHeaders. Mod_geoip2 will use whatever
+mod_remoteip provides.
+
+    GeoIPScanProxyHeaderField FieldName
+
+Sometimes it is useful to use another field as the source for the
+client’s IP address. You can set this directive to tell this module
+which header to look at in order to determine the client’s IP addres.
 
 Output Variables
 ----------------
@@ -164,77 +177,75 @@ set depend on the database you are using.
 
 ### GeoIP Country Edition Output Variables
 
-Name
-
-Description
-
-GEOIP_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-GEOIP_CONTINENT_CODE
+#### GEOIP_CONTINENT_CODE
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
 
--   **AF** - Africa
--   **AS** - Asia
--   **EU** - Europe
--   **NA** - North America
--   **OC** - Oceania
--   **SA** - South America
+-   **AF** – Africa
+-   **AS** – Asia
+-   **EU** – Europe
+-   **NA** – North America
+-   **OC** – Oceania
+-   **SA** – South America
 
-GEOIP_COUNTRY_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
--   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
--   **EU** - an IP in a block used by multiple
-    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
--   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **A1** – an [anonymous
+    proxy](http://dev.maxmind.com/faq/what-are-the-a1-anonymous-proxy-entries/).
+-   **A2** – a [satellite
+    provider](http://dev.maxmind.com/faq/what-are-the-a2-satellite-provider-entries/).
+-   **EU** – an IP in a block used by multiple
+    [European](http://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
+-   **AP** – an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-GEOIP_COUNTRY_NAME
+#### GEOIP_COUNTRY_NAME
 
 The country name associated with the IP address.
 
 ### GeoIP Region Edition Output Variables
 
-Name
-
-Description
-
-GEOIP_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-GEOIP_COUNTRY_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
--   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
--   **EU** - an IP in a block used by multiple
-    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
--   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **A1** – an [anonymous
+    proxy](http://dev.maxmind.com/geoip/#anonproxy).
+-   **A2** – a [satellite
+    provider](http://dev.maxmind.com/geoip/#satellite).
+-   **EU** – an IP in a block used by multiple
+    [European](http://dev.maxmind.com/geoip/#euapcodes) countries.
+-   **AP** – an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/geoip/#euapcodes) countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-GEOIP_REGION_NAME
+#### GEOIP_REGION_NAME
 
 The region name associated with the IP address.
 
-GEOIP_REGION
+#### GEOIP_REGION
 
 A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
 [FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
@@ -243,55 +254,54 @@ state/region associated with the IP address.
 For the US and Canada, we return an ISO-3166-2 code. In addition to the
 standard ISO codes, we may also return one of the following:
 
--   **AA** - Armed Forces America
--   **AE** - Armed Forces Europe
--   **AP** - Armed Forces Pacific
+-   **AA** – Armed Forces America
+-   **AE** – Armed Forces Europe
+-   **AP** – Armed Forces Pacific
 
 We return a FIPS code for all other countries.
 
 We provide a [CSV file which maps our region codes to region
-names](http://dev.maxmind.com/static/maxmind-region-codes.csv). The columns are ISO country
-code, region code (FIPS or ISO), and the region name.
+names](http://www.maxmind.com/download/geoip/misc/region_codes.csv). The
+columns are ISO country code, region code (FIPS or ISO), and the region
+name.
 
 ### GeoIP City Edition Output Variables
 
-Name
-
-Description
-
-GEOIP_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-GEOIP_CONTINENT_CODE
+#### GEOIP_CONTINENT_CODE
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
 
--   **AF** - Africa
--   **AS** - Asia
--   **EU** - Europe
--   **NA** - North America
--   **OC** - Oceania
--   **SA** - South America
+-   **AF** – Africa
+-   **AS** – Asia
+-   **EU** – Europe
+-   **NA** – North America
+-   **OC** – Oceania
+-   **SA** – South America
 
-GEOIP_COUNTRY_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
--   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
--   **EU** - an IP in a block used by multiple
-    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
--   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **A1** – an [anonymous
+    proxy](http://dev.maxmind.com/geoip/#anonproxy).
+-   **A2** – a [satellite
+    provider](http://dev.maxmind.com/geoip/#satellite).
+-   **EU** – an IP in a block used by multiple
+    [European](http://dev.maxmind.com/geoip/#euapcodes) countries.
+-   **AP** – an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/geoip/#euapcodes) countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-GEOIP_REGION
+#### GEOIP_REGION
 
 A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
 [FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
@@ -300,76 +310,79 @@ state/region associated with the IP address.
 For the US and Canada, we return an ISO-3166-2 code. In addition to the
 standard ISO codes, we may also return one of the following:
 
--   **AA** - Armed Forces America
--   **AE** - Armed Forces Europe
--   **AP** - Armed Forces Pacific
+-   **AA** – Armed Forces America
+-   **AE** – Armed Forces Europe
+-   **AP** – Armed Forces Pacific
 
 We return a FIPS code for all other countries.
 
 We provide a [CSV file which maps our region codes to region
-names](http://dev.maxmind.com/static/maxmind-region-codes.csv). The columns are ISO country
-code, region code (FIPS or ISO), and the region name.
+names](http://www.maxmind.com/download/geoip/misc/region_codes.csv). The
+columns are ISO country code, region code (FIPS or ISO), and the region
+name.
 
-GEOIP_REGION_NAME
+#### GEOIP_REGION_NAME
 
 The region name associated with the IP address.
 
-GEOIP_CITY
+#### GEOIP_CITY
 
 The city or town name associated with the IP address. See our [list of
 cities](http://www.maxmind.com/GeoIPCity-534-Location.csv) to see all
 the possible return values. This list is updated on a regular basis.
 
-GEOIP_METRO_CODE
+#### GEOIP_METRO_CODE
 
 The metro code associated with the IP address. These are only available
 for IP addresses in the US. MaxMind returns the [same metro codes as the
 Google AdWords
-API](https://developers.google.com/adwords/api/docs/appendix/metrocodes).
+API](https://developers.google.com/adwords/api/docs/appendix/cities-DMAregions).
 
-GEOIP_AREA_CODE
+#### GEOIP_AREA_CODE
 
 The telephone area code associated with the IP address. These are only
 available for IP addresses in the US.
 
-GEOIP_LATITUDE
+#### GEOIP_LATITUDE
 
 The latitude associated with the IP address.
 
-GEOIP_LONGITUDE
+#### GEOIP_LONGITUDE
 
 The longitude associated with the IP address.
 
-GEOIP_POSTAL_CODE
+#### GEOIP_POSTAL_CODE
 
 The postal code associated with the IP address. These are available for
 some IP addresses in the US, Canada, Germany, and United Kingdom.
 
 ### GeoIP ISP Edition Output Variables
 
-  Name          Description
-  ------------- -----------------------------------------------------
-  GEOIP_ADDR   The address used to calculate the GeoIP output.
-  GEOIP_ISP    The name of the ISP associated with the IP address.
-
-### GeoIP Organization Edition Output Variables
-
-  Name                  Description
-  --------------------- --------------------------------------------------------------
-  GEOIP_ADDR           The address used to calculate the GeoIP output.
-  GEOIP_ORGANIZATION   The name of the organization associated with the IP address.
-
-### GeoIP Netspeed Edition Output Variables
-
-Name
-
-Description
-
-GEOIP_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-GEOIP_NETSPEED
+#### GEOIP_ISP
+
+The name of the ISP associated with the IP address.
+
+### GeoIP Organization Edition Output Variables
+
+#### GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+#### GEOIP_ORGANIZATION
+
+The name of the organization associated with the IP address.
+
+### GeoIP Netspeed Edition Output Variables
+
+#### GEOIP_ADDR
+
+The address used to calculate the GeoIP output.
+
+#### GEOIP_NETSPEED
 
 The network speed associated with the IP address. This can be one of the
 following values:
@@ -381,43 +394,41 @@ following values:
 
 ### GeoIPv6 Edition (experimental) Output Variables
 
-Name
-
-Description
-
-GEOIP_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-GEOIP_CONTINENT_CODE_V6
+#### GEOIP_CONTINENT_CODE_V6
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
 
--   **AF** - Africa
--   **AS** - Asia
--   **EU** - Europe
--   **NA** - North America
--   **OC** - Oceania
--   **SA** - South America
+-   **AF** – Africa
+-   **AS** – Asia
+-   **EU** – Europe
+-   **NA** – North America
+-   **OC** – Oceania
+-   **SA** – South America
 
-GEOIP_COUNTRY_CODE_V6
+#### GEOIP_COUNTRY_CODE_V6
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](http://dev.maxmind.com/faq/geoip#anonproxy).
--   **A2** - a [satellite provider](http://dev.maxmind.com/faq/geoip#satellite).
--   **EU** - an IP in a block used by multiple
-    [European](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
--   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](http://dev.maxmind.com/faq/geoip#euapcodes) countries.
+-   **A1** – an [anonymous
+    proxy](http://dev.maxmind.com/geoip/#anonproxy).
+-   **A2** – a [satellite
+    provider](http://dev.maxmind.com/geoip/#satellite).
+-   **EU** – an IP in a block used by multiple
+    [European](http://dev.maxmind.com/geoip/#euapcodes) countries.
+-   **AP** – an IP in a block used by multiple [Asia/Pacific
+    region](http://dev.maxmind.com/geoip/#euapcodes) countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-GEOIP_COUNTRY_NAME_V6
+#### GEOIP_COUNTRY_NAME_V6
 
 The country name associated with the IP address.
 
@@ -530,8 +541,8 @@ GeoIP is available for all locations:
 Memory Usage
 ------------
 
-Starting at mod_geoip2 version 1.2.1, all Apache child processes share
-the same database when you set the MemoryCache or MMapCache flag.
+Starting with mod_geoip2 version 1.2.1, all Apache child processes
+share the same database when you set the MemoryCache or MMapCache flag.
 
 Memory usage is about the same as the database file size, no matter how
 many child processes Apache spawns. The only thing to remember is ask
@@ -558,7 +569,10 @@ If the GeoIP variables do not show up please make sure that the client
 IP address is not on a private network such as 10.0.0.0/8, 172.16.0.0/12
 or 192.168.0.0/16. GeoIP can only look up public IP addresses.
 
-----
+© 2014 [Maxmind Developer Site](http://dev.maxmind.com/), all rights
+reserved.
+
+-----
 
 This file was generated by running
 
