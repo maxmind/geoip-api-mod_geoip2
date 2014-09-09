@@ -824,36 +824,44 @@ static const char *set_geoip_enable_utf8(cmd_parms * cmd, void *dummy, int arg)
 }
 
 static const char *set_geoip_filename(cmd_parms * cmd, void *dummy,
-                                      const char *filename, const char *arg2)
+                                      int argc, char *const argv[])
 {
-    int i;
+    int i, n;
     geoip_server_config_rec *conf = (geoip_server_config_rec *)
                                     ap_get_module_config(
         cmd->server->module_config, &geoip_module);
 
-    if (!filename) {
-        return NULL;
+    if (argc == 0) {
+        return "missing database path";
     }
 
     i = conf->numGeoIPFiles;
     conf->numGeoIPFiles++;
     conf->GeoIPFilenames =
         realloc(conf->GeoIPFilenames, conf->numGeoIPFiles * sizeof(char *));
-    conf->GeoIPFilenames[i] = (char *)apr_pstrdup(cmd->pool, filename);
+    conf->GeoIPFilenames[i] = (char *)apr_pstrdup(cmd->pool, argv[0]);
     conf->GeoIPFlags2 =
         realloc(conf->GeoIPFlags2, conf->numGeoIPFiles * sizeof(int));
-    if (arg2 == NULL) {
+    if (argc == 1) {
         conf->GeoIPFlags2[i] = GEOIP_UNKNOWN;
-    } else if (!strcmp(arg2, "Standard")) {
-        conf->GeoIPFlags2[i] = GEOIP_STANDARD;
-    } else if (!strcmp(arg2, "MemoryCache")) {
-        conf->GeoIPFlags2[i] = GEOIP_MEMORY_CACHE;
-    } else if (!strcmp(arg2, "CheckCache")) {
-        conf->GeoIPFlags2[i] = GEOIP_CHECK_CACHE;
-    } else if (!strcmp(arg2, "IndexCache")) {
-        conf->GeoIPFlags2[i] = GEOIP_INDEX_CACHE;
-    } else if (!strcmp(arg2, "MMapCache")) {
-        conf->GeoIPFlags2[i] = GEOIP_MMAP_CACHE;
+        return NULL;
+    }
+    conf->GeoIPFlags2[i] = GEOIP_STANDARD;
+    if (argc == 2 && !strcmp(argv[1], "Standard")) {
+        return NULL;
+    }
+    for (n = 1; n < argc; ++n) {
+        if (!strcmp(argv[n], "MemoryCache")) {
+            conf->GeoIPFlags2[i] |= GEOIP_MEMORY_CACHE;
+        } else if (!strcmp(argv[n], "CheckCache")) {
+            conf->GeoIPFlags2[i] |= GEOIP_CHECK_CACHE;
+        } else if (!strcmp(argv[n], "IndexCache")) {
+            conf->GeoIPFlags2[i] |= GEOIP_INDEX_CACHE;
+        } else if (!strcmp(argv[n], "MMapCache")) {
+            conf->GeoIPFlags2[i] = GEOIP_MMAP_CACHE;
+        } else {
+            return "unknown flag";
+        }
     }
     return NULL;
 }
@@ -937,11 +945,11 @@ static const command_rec geoip_cmds[] = {
                  NULL,
                  RSRC_CONF,
                  "Turn on utf8 characters for city names"),
-    AP_INIT_TAKE12("GeoIPDBFile",
-                   set_geoip_filename,
-                   NULL,
-                   RSRC_CONF,
-                   "Path to GeoIP Data File"),
+    AP_INIT_TAKE_ARGV("GeoIPDBFile",
+                      set_geoip_filename,
+                      NULL,
+                      RSRC_CONF,
+                      "Path to GeoIP Data File"),
     AP_INIT_ITERATE("GeoIPOutput",
                     set_geoip_output_mode,
                     NULL,
