@@ -858,7 +858,7 @@ static const char *set_geoip_filename(cmd_parms * cmd, void *dummy,
         } else if (!strcmp(argv[n], "IndexCache")) {
             conf->GeoIPFlags2[i] |= GEOIP_INDEX_CACHE;
         } else if (!strcmp(argv[n], "MMapCache")) {
-            conf->GeoIPFlags2[i] = GEOIP_MMAP_CACHE;
+            conf->GeoIPFlags2[i] |= GEOIP_MMAP_CACHE;
         } else {
             return "unknown flag";
         }
