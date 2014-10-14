@@ -540,6 +540,7 @@ static int geoip_header_parser(request_rec * r)
         case GEOIP_NETSPEED_EDITION_REV1:
             orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
             geoip_say(cfg, r, "GEOIP_NETSPEED", orgorisp);
+            free(orgorisp);
             break;
 
         case GEOIP_NETSPEED_EDITION:
@@ -688,14 +689,17 @@ static int geoip_header_parser(request_rec * r)
         case GEOIP_ORG_EDITION:
             orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
             geoip_say(cfg, r, "GEOIP_ORGANIZATION", orgorisp);
+            free(orgorisp);
             break;
         case GEOIP_ISP_EDITION:
             orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
             geoip_say(cfg, r, "GEOIP_ISP", orgorisp);
+            free(orgorisp);
             break;
         case GEOIP_DOMAIN_EDITION:
             orgorisp = GeoIP_name_by_addr(cfg->gips[i], ipaddr);
             geoip_say(cfg, r, "GEOIP_DOMAIN", orgorisp);
+            free(orgorisp);
             break;
         }
     }

@@ -1,3 +1,4 @@
+    - Fix small memleak (Boris Zentner)
 1.2.9 Mar 20 2014
     - Added a new directive, GeoIPScanProxyHeaderField, to specify a custom
       header which contains the client's IP address (Sascha Kuehndel)
