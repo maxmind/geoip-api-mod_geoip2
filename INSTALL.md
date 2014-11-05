@@ -3,7 +3,7 @@
 ## Requirements
 
 Apache 2.0.40 or higher installed  If using RPM, the httpd-devel package
-containing apxs may need to be installed [GeoIP 1.4.3 or higher
+containing apxs may need to be installed [GeoIP 1.4.8 or higher
 installed](https://github.com/maxmind/geoip-api-c/releases).
 
 ## Building

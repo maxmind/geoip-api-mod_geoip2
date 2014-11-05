@@ -42,7 +42,7 @@ free software, and is licensed under the [Apache
 license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 To compile and install this module, you must first install [libGeoIP
-1.4.3](http://dev.maxmind.com/geoip/legacy/downloadable/#MaxMind-Supported_APIs)
+1.4.8](http://dev.maxmind.com/geoip/legacy/downloadable/#MaxMind-Supported_APIs)
 or newer.
 
 The mod_geoip2 module takes effect either during request header parsing phase
