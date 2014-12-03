@@ -6,30 +6,30 @@ Important Note
 
 This API is for the GeoIP Legacy format (dat). To read the MaxMind DB format
 (mmdb) used by GeoIP2, please see
-[mod\_maxminddb](https://github.com/maxmind/mod_maxminddb)
+[mod_maxminddb](https://github.com/maxmind/mod_maxminddb)
 
 Description
 -----------
 
-The mod\_geoip2 module embeds GeoIP Legacy database lookups into the
+The mod_geoip2 module embeds GeoIP Legacy database lookups into the
 Apache web server. It is only capable of looking up the IP of a client
 that connects to the web server, as opposed to looking up arbitrary
 addresses.
 
 This module works with Apache 2. Please use
-[mod\_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
+[mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
 with Apache 1.
 
 Version
 -------
 
-The latest version of mod\_geoip2 is version 1.2.9.
+The latest version of mod_geoip2 is version 1.2.9.
 
 Installation
 ------------
 
 You can [download
-mod\_geoip2](https://github.com/maxmind/geoip-api-mod_geoip2/releases)
+mod_geoip2](https://github.com/maxmind/geoip-api-mod_geoip2/releases)
 from GitHub or get the latest development version from
 [GitHub](https://github.com/maxmind/geoip-api-mod_geoip2). See the
 `INSTALL` file in the tarball for installation details.
@@ -37,7 +37,7 @@ from GitHub or get the latest development version from
 Overview
 --------
 
-The mod\_geoip2 module uses the libGeoIP library to look up geolocation
+The mod_geoip2 module uses the libGeoIP library to look up geolocation
 information for a client as part of the http request process. This
 module is free software, and is licensed under the [Apache
 license](http://www.apache.org/licenses/LICENSE-2.0.html).
@@ -45,7 +45,7 @@ license](http://www.apache.org/licenses/LICENSE-2.0.html).
 To compile and install this module, you must first install [libGeoIP
 1.4.3](/?page_id=44#MaxMind-Supported_APIs) or newer.
 
-The mod\_geoip2 module takes effect either during request header parsing
+The mod_geoip2 module takes effect either during request header parsing
 phase or the post read request phase, depending on whether it is
 configured for server-wide use or for a specific location/directory.
 
@@ -126,7 +126,7 @@ with this directive:
 
     GeoIPEnableUTF8 On
 
-By default mod\_geoip2 sets variables in both the notes table and
+By default mod_geoip2 sets variables in both the notes table and
 environment. For performance reasons you may want to set only the one
 you use. To do so, use the `GeoIPOutput` configuration directive:
 
@@ -169,9 +169,9 @@ private IP Address.
 
     GeoIPUseFirstNonPrivateXForwardedForIP On
 
-Apache 2.4 users using mod\_remoteip to pick the IP address of the user
-should disable GeoIPScanProxyHeaders. Mod\_geoip2 will use whatever
-mod\_remoteip provides.
+Apache 2.4 users using mod_remoteip to pick the IP address of the user
+should disable GeoIPScanProxyHeaders. Mod_geoip2 will use whatever
+mod_remoteip provides.
 
     GeoIPScanProxyHeaderField FieldName
 
@@ -188,11 +188,11 @@ set depend on the database you are using.
 
 ### GeoIP Country Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_CONTINENT\_CODE
+#### GEOIP_CONTINENT_CODE
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
@@ -204,7 +204,7 @@ The possible codes are:
 -   **OC** - Oceania
 -   **SA** - South America
 
-#### GEOIP\_COUNTRY\_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
@@ -220,17 +220,17 @@ to the standard codes, we may also return one of the following:
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-#### GEOIP\_COUNTRY\_NAME
+#### GEOIP_COUNTRY_NAME
 
 The country name associated with the IP address.
 
 ### GeoIP Region Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_COUNTRY\_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
@@ -246,11 +246,11 @@ to the standard codes, we may also return one of the following:
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-#### GEOIP\_REGION\_NAME
+#### GEOIP_REGION_NAME
 
 The region name associated with the IP address.
 
-#### GEOIP\_REGION
+#### GEOIP_REGION
 
 A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
 [FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
@@ -272,11 +272,11 @@ name.
 
 ### GeoIP City Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_CONTINENT\_CODE
+#### GEOIP_CONTINENT_CODE
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
@@ -288,7 +288,7 @@ The possible codes are:
 -   **OC** - Oceania
 -   **SA** - South America
 
-#### GEOIP\_COUNTRY\_CODE
+#### GEOIP_COUNTRY_CODE
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
@@ -304,7 +304,7 @@ to the standard codes, we may also return one of the following:
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-#### GEOIP\_REGION
+#### GEOIP_REGION
 
 A two character [ISO-3166-2](http://en.wikipedia.org/wiki/ISO_3166-2) or
 [FIPS 10-4](http://en.wikipedia.org/wiki/FIPS_10-4) code for the
@@ -324,68 +324,68 @@ names](http://www.maxmind.com/download/geoip/misc/region_codes.csv). The
 columns are ISO country code, region code (FIPS or ISO), and the region
 name.
 
-#### GEOIP\_REGION\_NAME
+#### GEOIP_REGION_NAME
 
 The region name associated with the IP address.
 
-#### GEOIP\_CITY
+#### GEOIP_CITY
 
 The city or town name associated with the IP address. See our [list of
 cities](http://www.maxmind.com/GeoIPCity-534-Location.csv) to see all
 the possible return values. This list is updated on a regular basis.
 
-#### GEOIP\_METRO\_CODE
+#### GEOIP_METRO_CODE
 
 The metro code associated with the IP address. These are only available
 for IP addresses in the US. MaxMind returns the [same metro codes as the
 Google AdWords
 API](https://developers.google.com/adwords/api/docs/appendix/cities-DMAregions).
 
-#### GEOIP\_AREA\_CODE
+#### GEOIP_AREA_CODE
 
 The telephone area code associated with the IP address. These are only
 available for IP addresses in the US.
 
-#### GEOIP\_LATITUDE
+#### GEOIP_LATITUDE
 
 The latitude associated with the IP address.
 
-#### GEOIP\_LONGITUDE
+#### GEOIP_LONGITUDE
 
 The longitude associated with the IP address.
 
-#### GEOIP\_POSTAL\_CODE
+#### GEOIP_POSTAL_CODE
 
 The postal code associated with the IP address. These are available for
 some IP addresses in the US, Canada, Germany, and United Kingdom.
 
 ### GeoIP ISP Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_ISP
+#### GEOIP_ISP
 
 The name of the ISP associated with the IP address.
 
 ### GeoIP Organization Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_ORGANIZATION
+#### GEOIP_ORGANIZATION
 
 The name of the organization associated with the IP address.
 
 ### GeoIP Netspeed Edition Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_NETSPEED
+#### GEOIP_NETSPEED
 
 The network speed associated with the IP address. This can be one of the
 following values:
@@ -397,11 +397,11 @@ following values:
 
 ### GeoIPv6 Edition (experimental) Output Variables
 
-#### GEOIP\_ADDR
+#### GEOIP_ADDR
 
 The address used to calculate the GeoIP output.
 
-#### GEOIP\_CONTINENT\_CODE\_V6
+#### GEOIP_CONTINENT_CODE_V6
 
 A two-character code for the continent associated with the IP address.
 The possible codes are:
@@ -413,7 +413,7 @@ The possible codes are:
 -   **OC** - Oceania
 -   **SA** - South America
 
-#### GEOIP\_COUNTRY\_CODE\_V6
+#### GEOIP_COUNTRY_CODE_V6
 
 A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
@@ -429,14 +429,14 @@ to the standard codes, we may also return one of the following:
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
 
-#### GEOIP\_COUNTRY\_NAME\_V6
+#### GEOIP_COUNTRY_NAME_V6
 
 The country name associated with the IP address.
 
 Examples
 --------
 
-Here are some examples of how you can use mod\_geoip2.
+Here are some examples of how you can use mod_geoip2.
 
 ### Redirecting a client based on country
 
@@ -548,7 +548,7 @@ GeoIP is available for all locations:
 Memory Usage
 ------------
 
-Starting with mod\_geoip2 version 1.2.1, all Apache child processes
+Starting with mod_geoip2 version 1.2.1, all Apache child processes
 share the same database when you set the MemoryCache or MMapCache flag.
 
 Memory usage is about the same as the database file size, no matter how
@@ -559,10 +559,10 @@ option to do so without stopping Apache.
 Performance
 -----------
 
-For improved performance, you may want to enable mod\_geoip only for
-specific HTML pages. If you want to use the mod\_geoip module site-wide,
+For improved performance, you may want to enable mod_geoip only for
+specific HTML pages. If you want to use the mod_geoip module site-wide,
 you may still be able to only use it for HTML pages and not images. To
-restrict the pages where mod\_geoip2 is used, place the `GeoIPEnable On`
+restrict the pages where mod_geoip2 is used, place the `GeoIPEnable On`
 directive inside a , or directive, see:
 [httpd.apache.org/docs/2.0/sections.html](http://httpd.apache.org/docs/2.0/sections.html)
 
