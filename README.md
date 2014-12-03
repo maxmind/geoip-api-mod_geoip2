@@ -58,8 +58,8 @@ environment or both depending on the server configuration.
 Configuration
 -------------
 
-GeoIP configuration directives can be placed in either an `.htaccess` file or
-in the main server config. After installing the module, make sure that
+GeoIP configuration directives must be placed in the main Apache server config
+(i.e. not in .htaccess files).  After installing the module, make sure that
 
     GeoIPEnable On
 
