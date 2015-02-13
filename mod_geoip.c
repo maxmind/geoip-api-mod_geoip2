@@ -214,7 +214,7 @@ static apr_status_t geoip_cleanup(void *cfgdata)
     return APR_SUCCESS;
 }
 
-/* initialize geoip once per server ( even virtal server! ) */
+/* initialize geoip any per server ( any virtual server! ) */
 static void geoip_server_init(apr_pool_t * p, server_rec * s)
 {
     geoip_server_config_rec *cfg;
