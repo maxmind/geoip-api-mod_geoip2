@@ -212,8 +212,6 @@ static apr_status_t geoip_cleanup(void *cfgdata)
                 cfg->gips[i] = NULL;
             }
         }
-        free(cfg->gips);
-        cfg->gips = NULL;
     }
     return APR_SUCCESS;
 }
@@ -223,44 +221,47 @@ static void geoip_server_init(apr_pool_t * p, server_rec * s)
 {
     geoip_server_config_rec *cfg;
     int i;
-    cfg = (geoip_server_config_rec *)
-          ap_get_module_config(s->module_config, &geoip_module);
 
-    if (!cfg->gips) {
-        if (cfg->GeoIPFilenames != NULL) {
-            cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
-            for (i = 0; i < cfg->numGeoIPFiles; i++) {
-                cfg->gips[i] =
-                    GeoIP_open(cfg->GeoIPFilenames[i],
-                               (cfg->GeoIPFlags2[i] ==
-                                GEOIP_UNKNOWN) ? cfg->GeoIPFlags
-                               : cfg->GeoIPFlags2[i]);
+    while (s) {
+        cfg = (geoip_server_config_rec *)
+              ap_get_module_config(s->module_config, &geoip_module);
 
-                if (cfg->gips[i]) {
-                    if (cfg->GeoIPEnableUTF8) {
-                        GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
+        if (!cfg->gips) {
+            if (cfg->GeoIPFilenames != NULL) {
+                cfg->gips = apr_pcalloc(p, sizeof(GeoIP *) * cfg->numGeoIPFiles);
+                for (i = 0; i < cfg->numGeoIPFiles; i++) {
+                    cfg->gips[i] =
+                        GeoIP_open(cfg->GeoIPFilenames[i],
+                                   (cfg->GeoIPFlags2[i] ==
+                                    GEOIP_UNKNOWN) ? cfg->GeoIPFlags
+                                   : cfg->GeoIPFlags2[i]);
+
+                    if (cfg->gips[i]) {
+                        if (cfg->GeoIPEnableUTF8) {
+                            GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
+                        }
+                    } else {
+                        ap_log_error(APLOG_MARK, APLOG_ERR, 0,
+                                     s,
+                                     "[mod_geoip]: Error while opening data file %s",
+                                     cfg->GeoIPFilenames[i]);
+                        continue;
                     }
-                } else {
-                    ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                                 s,
-                                 "[mod_geoip]: Error while opening data file %s",
-                                 cfg->GeoIPFilenames[i]);
-                    continue;
                 }
+            } else {
+                cfg->gips = apr_pcalloc(p, sizeof(GeoIP *));
+                cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
+                if (!cfg->gips[0]) {
+                    ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                                 "[mod_geoip]: Error while opening data file");
+                }
+                cfg->numGeoIPFiles = 1;
             }
-        } else {
-            cfg->gips = malloc(sizeof(GeoIP *));
-            cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
-            if (!cfg->gips[0]) {
-                ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
-                             "[mod_geoip]: Error while opening data file");
-            }
-            cfg->numGeoIPFiles = 1;
         }
+
+        apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
+        s = s->next;
     }
-
-    apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
-
 }
 
 static void geoip_child_init(apr_pool_t * p, server_rec * s)
@@ -268,47 +269,55 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
     geoip_server_config_rec *cfg;
     int i, flags;
 
-    cfg = (geoip_server_config_rec *)
-          ap_get_module_config(s->module_config, &geoip_module);
+    while(s) {
+        cfg = (geoip_server_config_rec *)
+              ap_get_module_config(s->module_config, &geoip_module);
 
-    if (cfg->gips) {
-        if (cfg->GeoIPFilenames != NULL) {
-            for (i = 0; i < cfg->numGeoIPFiles; i++) {
-                flags =
-                    (cfg->GeoIPFlags2[i] ==
-                     GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i];
-                if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE)) {
-                    continue;
-                }
-                if (cfg->gips[i]) {
-                    GeoIP_delete(cfg->gips[i]);
-                }
-                cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], flags);
-
-                if (cfg->gips[i]) {
-                    if (cfg->GeoIPEnableUTF8) {
-                        GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
+        if (cfg->gips) {
+            if (cfg->GeoIPFilenames != NULL) {
+                for (i = 0; i < cfg->numGeoIPFiles; i++) {
+                    flags =
+                        (cfg->GeoIPFlags2[i] ==
+                         GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i];
+#if 0
+                    if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE)) {
+                        continue;
                     }
-                } else {
-                    ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                                 s,
-                                 "[mod_geoip]: Error while opening data file %s",
-                                 cfg->GeoIPFilenames[i]);
-                    continue;
+#endif
+                    if (cfg->gips[i]) {
+                        GeoIP_delete(cfg->gips[i]);
+                    }
+                    cfg->gips[i] = GeoIP_open(cfg->GeoIPFilenames[i], flags);
+
+                    if (cfg->gips[i]) {
+                        if (cfg->GeoIPEnableUTF8) {
+                            GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
+                        }
+                    } else {
+                        ap_log_error(APLOG_MARK, APLOG_ERR, 0,
+                                     s,
+                                     "[mod_geoip]: Error while opening data file %s",
+                                     cfg->GeoIPFilenames[i]);
+                        continue;
+                    }
                 }
+            } else {
+                if (cfg->gips[0]) {
+                    GeoIP_delete(cfg->gips[0]);
+                }
+                cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
+                if (!cfg->gips[0]) {
+                    ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                                 "[mod_geoip]: Error while opening data file");
+                }
+                cfg->numGeoIPFiles = 1;
             }
-        } else {
-            if (cfg->gips[0]) {
-                GeoIP_delete(cfg->gips[0]);
-            }
-            cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
-            if (!cfg->gips[0]) {
-                ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
-                             "[mod_geoip]: Error while opening data file");
-            }
-            cfg->numGeoIPFiles = 1;
+            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
         }
+
+        s = s->next;
     }
+
 }
 
 /* map into the first apache */
@@ -482,44 +491,6 @@ static int geoip_header_parser(request_rec * r)
             }
         }
     }
-
-/* this block should be removed! */
-#if 1
-    if (!cfg->gips) {
-        if (cfg->GeoIPFilenames != NULL) {
-            cfg->gips = malloc(sizeof(GeoIP *) * cfg->numGeoIPFiles);
-            for (i = 0; i < cfg->numGeoIPFiles; i++) {
-                cfg->gips[i] =
-                    GeoIP_open(cfg->GeoIPFilenames[i],
-                               (cfg->GeoIPFlags2[i] ==
-                                GEOIP_UNKNOWN) ? cfg->GeoIPFlags
-                               : cfg->GeoIPFlags2[i]);
-
-                if (cfg->gips[i]) {
-                    if (cfg->GeoIPEnableUTF8) {
-                        GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
-                    }
-                } else {
-                    ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                                 r->server,
-                                 "[mod_geoip]: Error while opening data file %s",
-                                 cfg->GeoIPFilenames[i]);
-                    return DECLINED;
-                }
-            }
-        } else {
-            cfg->gips = malloc(sizeof(GeoIP *));
-            cfg->gips[0] = GeoIP_new(GEOIP_STANDARD);
-            if (!cfg->gips[0]) {
-                ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                             r->server,
-                             "[mod_geoip]: Error while opening data file");
-                return DECLINED;
-            }
-            cfg->numGeoIPFiles = 1;
-        }
-    }
-#endif
 
     geoip_say(cfg, r, "GEOIP_ADDR", ipaddr);
 
