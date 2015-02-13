@@ -59,7 +59,7 @@ configuration.
 Configuration
 -------------
 
-With the exception of `GeoIPDBEnable`, all GeoIP configuration
+With the exception of `GeoIPEnable`, all GeoIP configuration
 directives must be placed in the server-wide context of the main server
 config. (Please see [Server vs Directory
 context](#Server_vs_Directory_context) for a full explanation). After
