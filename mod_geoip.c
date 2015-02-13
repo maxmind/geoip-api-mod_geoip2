@@ -277,11 +277,6 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
                     flags =
                         (cfg->GeoIPFlags2[i] ==
                          GEOIP_UNKNOWN) ? cfg->GeoIPFlags : cfg->GeoIPFlags2[i];
-#if 0
-                    if (flags & (GEOIP_MEMORY_CACHE | GEOIP_MMAP_CACHE)) {
-                        continue;
-                    }
-#endif
                     if (cfg->gips[i]) {
                         GeoIP_delete(cfg->gips[i]);
                     }
