@@ -140,7 +140,7 @@ static int _is_private(uint32_t ipnum)
     return 0;
 }
 
-char *_get_ip_from_xff(request_rec r, const char *xffheader)
+char *_get_ip_from_xff(request_rec *r, const char *xffheader)
 {
     char *xff = apr_pstrdup(r->pool, xffheader);
     char *xff_ip, *break_ptr;
