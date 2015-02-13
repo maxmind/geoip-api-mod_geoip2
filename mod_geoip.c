@@ -140,9 +140,9 @@ static int _is_private(uint32_t ipnum)
     return 0;
 }
 
-char *_get_ip_from_xff(const char *xffheader)
+char *_get_ip_from_xff(request_rec r, const char *xffheader)
 {
-    char *xff = strdup(xffheader);
+    char *xff = apr_pstrdup(r->pool, xffheader);
     char *xff_ip, *break_ptr;
     uint32_t ipnum;
     if (xff) {
@@ -153,12 +153,10 @@ char *_get_ip_from_xff(const char *xffheader)
             }
             ipnum = htonl(ipnum);
             if (!_is_private(ipnum)) {
-                char *found = strdup(xff_ip);
-                free(xff);
+                char *found = apr_pstrdup(r->pool, xff_ip);
                 return found;
             }
         }
-        free(xff);
     }
     return NULL;
 }
@@ -257,9 +255,9 @@ static void geoip_server_init(apr_pool_t * p, server_rec * s)
                 }
                 cfg->numGeoIPFiles = 1;
             }
+            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
         }
 
-        apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
         s = s->next;
     }
 }
@@ -400,7 +398,6 @@ static int geoip_header_parser(request_rec * r)
 {
     char *orgorisp;
     char *ipaddr;
-    char *free_me = NULL;
     short int country_id;
     const char *continent_code;
     const char *country_code;
@@ -456,12 +453,12 @@ static int geoip_header_parser(request_rec * r)
 
             if (cfg->proxyHeaderMode ==
                 GEOIP_PROXY_HEADER_MODE_FIRST_NON_PRIVATE_IP) {
-                ipaddr = free_me = _get_ip_from_xff(ipaddr_ptr);
+                ipaddr = _get_ip_from_xff(r, ipaddr_ptr);
                 if (!ipaddr) {
                     ipaddr = _get_client_ip(r);
                 }
             } else {
-                ipaddr = free_me = (char *)calloc(8 * 4 + 7 + 1, sizeof(char));
+                ipaddr = (char *) apr_pcalloc(r->pool, 8 * 4 + 7 + 1);
                 /* proxyHeaderMode is
                  * GEOIP_PROXY_HEADER_MODE_LAST_IP or GEOIP_PROXY_HEADER_MODE_FIRST_IP
                  */
@@ -675,9 +672,6 @@ static int geoip_header_parser(request_rec * r)
         }
     }
 
-    if (free_me) {
-        free(free_me);
-    }
     return OK;
 }
 
