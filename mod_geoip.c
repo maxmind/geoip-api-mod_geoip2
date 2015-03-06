@@ -239,10 +239,11 @@ static void geoip_server_init(apr_pool_t * p, server_rec * s)
                             GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
                         }
                     } else {
-                        ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                                     s,
-                                     "[mod_geoip]: Error while opening data file %s",
-                                     cfg->GeoIPFilenames[i]);
+                        ap_log_error(
+                            APLOG_MARK, APLOG_ERR, 0,
+                            s,
+                            "[mod_geoip]: Error while opening data file %s",
+                            cfg->GeoIPFilenames[i]);
                         continue;
                     }
                 }
@@ -255,7 +256,8 @@ static void geoip_server_init(apr_pool_t * p, server_rec * s)
                 }
                 cfg->numGeoIPFiles = 1;
             }
-            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
+            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup,
+                                      geoip_cleanup);
         }
 
         s = s->next;
@@ -267,7 +269,7 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
     geoip_server_config_rec *cfg;
     int i, flags;
 
-    while(s) {
+    while (s) {
         cfg = (geoip_server_config_rec *)
               ap_get_module_config(s->module_config, &geoip_module);
 
@@ -287,10 +289,11 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
                             GeoIP_set_charset(cfg->gips[i], GEOIP_CHARSET_UTF8);
                         }
                     } else {
-                        ap_log_error(APLOG_MARK, APLOG_ERR, 0,
-                                     s,
-                                     "[mod_geoip]: Error while opening data file %s",
-                                     cfg->GeoIPFilenames[i]);
+                        ap_log_error(
+                            APLOG_MARK, APLOG_ERR, 0,
+                            s,
+                            "[mod_geoip]: Error while opening data file %s",
+                            cfg->GeoIPFilenames[i]);
                         continue;
                     }
                 }
@@ -305,7 +308,8 @@ static void geoip_child_init(apr_pool_t * p, server_rec * s)
                 }
                 cfg->numGeoIPFiles = 1;
             }
-            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup, geoip_cleanup);
+            apr_pool_cleanup_register(p, (void *)cfg, geoip_cleanup,
+                                      geoip_cleanup);
         }
 
         s = s->next;
@@ -437,9 +441,10 @@ static int geoip_header_parser(request_rec * r)
                 (char *)apr_table_get(r->subprocess_env, "HTTP_REMOTE_ADDR");
         }
         if (!ipaddr_ptr) {
-            ap_log_error(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0,
-                         r->server,
-                         "[mod_geoip]: Error while getting ipaddr from proxy headers. Using REMOTE_ADDR.");
+            ap_log_error(
+                APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0,
+                r->server,
+                "[mod_geoip]: Error while getting ipaddr from proxy headers. Using REMOTE_ADDR.");
             ipaddr = _get_client_ip(r);
         } else {
             /* Found XFF like header */
@@ -453,7 +458,7 @@ static int geoip_header_parser(request_rec * r)
                     ipaddr = _get_client_ip(r);
                 }
             } else {
-                ipaddr = (char *) apr_pcalloc(r->pool, 8 * 4 + 7 + 1);
+                ipaddr = (char *)apr_pcalloc(r->pool, 8 * 4 + 7 + 1);
                 /* proxyHeaderMode is
                  * GEOIP_PROXY_HEADER_MODE_LAST_IP or GEOIP_PROXY_HEADER_MODE_FIRST_IP
                  */
@@ -876,11 +881,12 @@ static const command_rec geoip_cmds[] = {
                   NULL,
                   RSRC_CONF,
                   "Get IP from this header field, only"),
-    AP_INIT_FLAG("GeoIPUseFirstNonPrivateXForwardedForIP",
-                 geoip_use_first_non_private_x_forwarded_for_ip,
-                 NULL,
-                 RSRC_CONF,
-                 "For more IP's in X-Forwarded-For, use the first non private IP"),
+    AP_INIT_FLAG(
+        "GeoIPUseFirstNonPrivateXForwardedForIP",
+        geoip_use_first_non_private_x_forwarded_for_ip,
+        NULL,
+        RSRC_CONF,
+        "For more IP's in X-Forwarded-For, use the first non private IP"),
     AP_INIT_FLAG("GeoIPUseFirstXForwardedForIP",
                  geoip_use_first_x_forwarded_for_ip,
                  NULL,
