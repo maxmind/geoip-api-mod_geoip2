@@ -175,30 +175,6 @@ static void *geoip_create_dir_config(apr_pool_t * p, char *d)
     return dcfg;
 }
 
-/* create a standard disabled server entry */
-
-static void *create_geoip_server_config(apr_pool_t * p, server_rec * d)
-{
-    geoip_server_config_rec *conf =
-        apr_pcalloc(p, sizeof(geoip_server_config_rec));
-    if (!conf) {
-        return NULL;
-    }
-
-    conf->gips = NULL;
-    conf->numGeoIPFiles = 0;
-    conf->GeoIPFilenames = NULL;
-    conf->GeoIPEnabled = 0;
-    conf->GeoIPEnableUTF8 = 0;
-    conf->GeoIPOutput = GEOIP_INIT;
-    conf->GeoIPFlags = GEOIP_STANDARD;
-    conf->GeoIPFlags2 = NULL;
-    conf->scanProxyHeaders = 0;
-    conf->proxyHeaderMode = 0;
-    conf->GeoIPProxyField = NULL;
-    return (void *)conf;
-}
-
 static apr_status_t geoip_cleanup(void *cfgdata)
 {
     int i;
@@ -401,7 +377,7 @@ static int geoip_header_parser(request_rec * r)
     const char *continent_code;
     const char *country_code;
     const char *country_name;
-    const char *region_name;
+    const char *region_name = NULL;
 
     geoip_server_config_rec *cfg;
 
@@ -573,7 +549,6 @@ static int geoip_header_parser(request_rec * r)
         case GEOIP_REGION_EDITION_REV1:
             giregion = GeoIP_region_by_name(cfg->gips[i], ipaddr);
             if (giregion != NULL) {
-                region_name = NULL;
                 if (giregion->country_code[0]) {
                     region_name =
                         GeoIP_region_name_by_code
