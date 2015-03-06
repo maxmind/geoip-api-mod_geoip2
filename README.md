@@ -20,11 +20,6 @@ This module works with Apache 2. Please use
 [mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
 with Apache 1.
 
-Version
--------
-
-The latest version of mod_geoip2 is version 1.2.9.
-
 Installation
 ------------
 
