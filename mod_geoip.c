@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
- * Copyright (c) 2004 MaxMind LLC.  All rights reserved.
+ * Copyright (c) 2004 MaxMind, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -47,19 +47,9 @@
  *
  */
 
-/* geoip module
- *
- * Version 1.2.9
- *
- * This module sets an environment variable to the remote country
- * based on the requestor's IP address.  It uses the GeoIP library
+/* This module sets an environment variable to the remote country
+ * based on the requester's IP address.  It uses the GeoIP library
  * to lookup the country by IP address.
- *
- * Copyright 2004, MaxMind LLC
- * July 12th 2004
- *
- * Initial port Contributed by Corris Randall <corris@cpan.org>
- *
  */
 
 #include "httpd.h"
