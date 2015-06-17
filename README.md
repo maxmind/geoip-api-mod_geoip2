@@ -1,12 +1,9 @@
 GeoIP Legacy Apache Module
 ==========================
 
-Important Note
---------------
-
-This API is for the GeoIP Legacy format (dat). To read the MaxMind DB format
-(mmdb) used by GeoIP2, please see
-[mod_maxminddb](https://github.com/maxmind/mod_maxminddb)
+**New Apache Module Available:** This module is for the GeoIP Legacy
+format (dat). To read the MaxMind DB format (mmdb) used by GeoIP2,
+please see [mod_maxminddb](https://github.com/maxmind/mod_maxminddb)
 
 Description
 -----------
@@ -19,6 +16,12 @@ addresses.
 This module works with Apache 2. Please use
 [mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
 with Apache 1.
+
+Version
+-------
+
+The latest version of mod_geoip2 can be found on the [GitHub Releases
+page](https://github.com/maxmind/geoip-api-mod_geoip2/releases).
 
 Installation
 ------------
@@ -34,11 +37,11 @@ Overview
 
 The mod_geoip2 module uses the libGeoIP library to look up geolocation
 information for a client as part of the http request process. This
-module is free software, and is licensed under the [Apache
-license](http://www.apache.org/licenses/LICENSE-2.0.html).
+module is free software, and is licensed under the [Apache Software
+License, Version 1.1](http://www.apache.org/licenses/LICENSE-1.1).
 
 To compile and install this module, you must first install [libGeoIP
-1.4.3](/?page_id=44#MaxMind-Supported_APIs) or newer.
+1.4.3](https://github.com/maxmind/geoip-api-c) or newer.
 
 The mod_geoip2 module takes effect either during request header parsing
 phase or the post read request phase, depending on whether it is
@@ -54,11 +57,10 @@ configuration.
 Configuration
 -------------
 
-With the exception of `GeoIPEnable`, all GeoIP configuration
-directives must be placed in the server-wide context of the main server
-config. (Please see [Server vs Directory
-context](#Server_vs_Directory_context) for a full explanation). After
-installing the module, make sure that
+With the exception of `GeoIPEnable`, all GeoIP configuration directives
+must be placed in the server-wide context of the main server config.
+(Please see [Server vs Directory context](#Server_vs_Directory_context)
+for a full explanation). After installing the module, make sure that
 
     GeoIPEnable On
 
@@ -205,12 +207,16 @@ A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](/?p=384).
--   **A2** - a [satellite provider](/?p=385).
--   **EU** - an IP in a block used by multiple [European](/?p=386)
+-   **A1** - an [anonymous
+    proxy](https://dev.maxmind.com/faq/what-are-the-a1-anonymous-proxy-entries/).
+-   **A2** - a [satellite
+    provider](https://dev.maxmind.com/faq/what-are-the-a2-satellite-provider-entries/).
+-   **EU** - an IP in a block used by multiple
+    [European](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
     countries.
 -   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](/?p=386) countries.
+    region](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
@@ -231,12 +237,16 @@ A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](/?page_id=23#anonproxy).
--   **A2** - a [satellite provider](/?page_id=23#satellite).
+-   **A1** - an [anonymous
+    proxy](https://dev.maxmind.com/faq/what-are-the-a1-anonymous-proxy-entries/).
+-   **A2** - a [satellite
+    provider](https://dev.maxmind.com/faq/what-are-the-a2-satellite-provider-entries/).
 -   **EU** - an IP in a block used by multiple
-    [European](/?page_id=23#euapcodes) countries.
+    [European](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 -   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](/?page_id=23#euapcodes) countries.
+    region](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
@@ -289,12 +299,16 @@ A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](/?page_id=23#anonproxy).
--   **A2** - a [satellite provider](/?page_id=23#satellite).
+-   **A1** - an [anonymous
+    proxy](https://dev.maxmind.com/faq/what-are-the-a1-anonymous-proxy-entries/).
+-   **A2** - a [satellite
+    provider](https://dev.maxmind.com/faq/what-are-the-a2-satellite-provider-entries/).
 -   **EU** - an IP in a block used by multiple
-    [European](/?page_id=23#euapcodes) countries.
+    [European](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 -   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](/?page_id=23#euapcodes) countries.
+    region](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
@@ -414,12 +428,16 @@ A two-character [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1)
 country code for the country associated with the IP address. In addition
 to the standard codes, we may also return one of the following:
 
--   **A1** - an [anonymous proxy](/?page_id=23#anonproxy).
--   **A2** - a [satellite provider](/?page_id=23#satellite).
+-   **A1** - an [anonymous
+    proxy](https://dev.maxmind.com/faq/what-are-the-a1-anonymous-proxy-entries/).
+-   **A2** - a [satellite
+    provider](https://dev.maxmind.com/faq/what-are-the-a2-satellite-provider-entries/).
 -   **EU** - an IP in a block used by multiple
-    [European](/?page_id=23#euapcodes) countries.
+    [European](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 -   **AP** - an IP in a block used by multiple [Asia/Pacific
-    region](/?page_id=23#euapcodes) countries.
+    region](https://dev.maxmind.com/faq/what-are-the-eu-europe-and-ap-asia-pacific-entries/)
+    countries.
 
 The **US** country code is returned for IP addresses associated with
 overseas US military bases.
