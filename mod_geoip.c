@@ -138,6 +138,15 @@ char *_get_ip_from_xff(request_rec *r, const char *xffheader)
     if (xff) {
         for (xff_ip = strtok_r(xff, " \t,", &break_ptr); xff_ip;
              xff_ip = strtok_r(NULL, " \t,", &break_ptr)) {
+#ifdef APR_INET6
+            /* XXX Needs IPv6 private check. */
+            struct in6_addr a6;
+
+            if (1 == inet_pton(APR_INET6, xff_ip, &a6)) {
+                char *found = apr_pstrdup(r->pool, xff_ip);
+                return found;
+            }
+#endif
             if (1 != inet_pton(AF_INET, xff_ip, &ipnum)) {
                 continue;
             }
