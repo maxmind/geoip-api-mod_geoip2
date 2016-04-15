@@ -17,6 +17,13 @@ This module works with Apache 2. Please use
 [mod_geoip](http://www.maxmind.com/download/geoip/api/mod_geoip/mod_geoip-latest.tar.gz)
 with Apache 1.
 
+IP Geolocation Usage
+--------------------
+
+IP geolocation is inherently imprecise. Locations are often near the center of
+the population. Any location provided by a GeoIP database should not be used to
+identify a particular address or household.
+
 Version
 -------
 
@@ -357,11 +364,15 @@ available for IP addresses in the US.
 
 #### GEOIP_LATITUDE
 
-The latitude associated with the IP address.
+The approximate latitude  of the location associated with the IP address. This
+value is not precise and should not be used to identify a particular address
+or household.
 
 #### GEOIP_LONGITUDE
 
-The longitude associated with the IP address.
+The approximate longitude of the location associated with the IP address. This
+value is not precise and should not be used to identify a particular address
+or household.
 
 #### GEOIP_POSTAL_CODE
 
