@@ -80,11 +80,11 @@ or to pass caching options, you can use the `GeoIPDBFile` directive:
 
 ### File and Caching Directives
 
-    GeoIPDBFile /path/to/GeoIP.dat [GeoIPFlag]
+    GeoIPDBFile /path/to/GeoIP.dat [GeoIPFlag [GeoIPFlag] ...]
 
 For example:
 
-    GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache
+    GeoIPDBFile /usr/local/share/GeoIP/GeoIP.dat MemoryCache CheckCache
     GeoIPDBFile /usr/local/share/GeoIP/GeoIPOrg.dat Standard
 
 The default GeoIPFlag value is Standard, which does not perform any
