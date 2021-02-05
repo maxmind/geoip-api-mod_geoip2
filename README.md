@@ -1,9 +1,19 @@
 GeoIP Legacy Apache Module
 ==========================
 
-**New Apache Module Available:** This module is for the GeoIP Legacy
-format (dat). To read the MaxMind DB format (mmdb) used by GeoIP2,
-please see [mod_maxminddb](https://github.com/maxmind/mod_maxminddb)
+End of Life
+-----------
+
+MaxMind will be retiring the GeoIP Legacy databases at the end of May
+2022. Until then, this library will only receive critical security and bug
+fixes. Support for this library will end completely with the last release of
+the legacy GeoIP databases.
+
+We recommend that you upgrade to our GeoIP2 databases. You can read these
+from Apache using [mod_maxminddb](https://github.com/maxmind/mod_maxminddb).
+
+See [our blog post](https://blog.maxmind.com/2020/06/01/retirement-of-geoip-legacy-downloadable-databases-in-may-2022/)
+for more information.
 
 Description
 -----------
