@@ -77,6 +77,7 @@ typedef struct {
     int GeoIPFlags;
     int *GeoIPFlags2;
     int scanProxyHeaders;
+    int removePortFromIpAddress;
     int proxyHeaderMode;
     char *GeoIPProxyField;
 } geoip_server_config_rec;
@@ -343,6 +344,33 @@ char *_get_client_ip(request_rec * r)
 #endif
 }
 
+static char *get_ip_address_without_port(const char *s)
+{
+    // Check if IP address string contains a 'colon', which signifies a port suffix
+	char* ptr = strchr(s, ':');
+
+    if (ptr == NULL) {
+		// IP address does not contain port number - return original string
+        return (char *)s;
+    }
+
+    // Define the length of the IP address string, without port suffix
+    int length = ptr - s;
+
+    // Allocate memory for new substring
+    char *ip_addr = malloc(length+1);
+
+    // Check allocation succeeded
+    if (ip_addr == NULL) {
+        return NULL;
+    }
+
+    // Copy substring
+    memcpy(ip_addr, s, length);
+    ip_addr[length] = '\0';
+    return (char *)ip_addr;
+}
+
 static void geoip_say(geoip_server_config_rec * cfg, request_rec * r,
                       const char *key, const char *value)
 {
@@ -453,6 +481,11 @@ static int geoip_header_parser(request_rec * r)
                 }
             }
         }
+    }
+
+    if (cfg->removePortFromIpAddress) {
+        // Override IP address by removing port number suffix
+        ipaddr = get_ip_address_without_port(ipaddr);
     }
 
     geoip_say(cfg, r, "GEOIP_ADDR", ipaddr);
@@ -721,6 +754,20 @@ static const char *geoip_scanproxy(cmd_parms * cmd, void *dummy, int arg)
     return NULL;
 }
 
+static const char *geoip_remove_port_number_suffix_from_ip(cmd_parms * cmd, void *dummy, int arg)
+{
+    geoip_server_config_rec *conf = (geoip_server_config_rec *)
+                                    ap_get_module_config(
+        cmd->server->module_config, &geoip_module);
+
+    if (!conf) {
+        return "mod_geoip: server structure not allocated";
+    }
+
+    conf->removePortFromIpAddress = arg;
+    return NULL;
+}
+
 static const char *set_geoip_enable(cmd_parms * cmd, void *dummy, int arg)
 {
     geoip_server_config_rec *conf;
@@ -826,6 +873,7 @@ static void *make_geoip(apr_pool_t * p, server_rec * d)
                                                (geoip_server_config_rec));
     dcfg->gips = NULL;
     dcfg->numGeoIPFiles = 0;
+    dcfg->removePortFromIpAddress = 0;
     dcfg->GeoIPFilenames = NULL;
     dcfg->GeoIPEnabled = 0;
     dcfg->GeoIPEnableUTF8 = 0;
@@ -862,6 +910,11 @@ static const command_rec geoip_cmds[] = {
                  NULL,
                  RSRC_CONF,
                  "For more IP's in X-Forwarded-For, use the last"),
+    AP_INIT_FLAG("GeoIPRemovePortNumberSuffixFromIP",
+                 geoip_remove_port_number_suffix_from_ip,
+                 NULL,
+                 RSRC_CONF,
+                 "If IP Address contains port number suffix, remove it"),
     AP_INIT_FLAG("GeoIPEnable",
                  set_geoip_enable,
                  NULL,
