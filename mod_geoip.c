@@ -350,7 +350,7 @@ static char *get_ip_address_without_port(const char *s)
 	char* ptr = strchr(s, ':');
 
     if (ptr == NULL) {
-		// IP address does not contain port number - return original string
+        // IP address does not contain port number - return original string
         return (char *)s;
     }
 
